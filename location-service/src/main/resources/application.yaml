@@ -1,0 +1,17 @@
+spring:
+#  flyway:
+#    enabled: false
+#    baselineOnMigrate: true
+#    fail-on-missing-locations: false
+  datasource:
+    url: "jdbc:postgresql://localhost:5432/jumbo"
+    username: myuser
+    password: mypassword
+    max-active: 15
+
+  config:
+    import:  "optional:configserver:http://localhost:8888"
+
+app:
+  nearby:
+    strategy: "quadtree" # "in-memory" or "quadtree"
