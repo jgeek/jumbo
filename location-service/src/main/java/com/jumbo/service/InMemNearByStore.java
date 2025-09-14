@@ -1,14 +1,11 @@
-package com.jumbo.service.nearby;
+package com.jumbo.service;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jumbo.model.Store;
 import com.jumbo.repositoy.StoreRepository;
 import com.jumbo.utils.DistanceCalculator;
 import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Service;
 
-import java.io.InputStream;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;

@@ -1,4 +1,4 @@
-package com.jumbo.service.nearby;
+package com.jumbo.service;
 
 import com.jumbo.model.Store;
 

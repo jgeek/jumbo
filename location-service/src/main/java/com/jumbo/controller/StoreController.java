@@ -1,58 +1,78 @@
 package com.jumbo.controller;
 
 import com.jumbo.model.Store;
-import com.jumbo.service.nearby.InMemNearByStore;
-import com.jumbo.service.nearby.NearByRequest;
-import com.jumbo.service.nearby.NearByService;
-import com.jumbo.service.nearby.QuadTreeNearByService;
+import com.jumbo.service.NearByRequest;
+import com.jumbo.service.NearByService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/stores")
+@Validated
+@RequiredArgsConstructor
+@Slf4j
+@Tag(name = "Store Location API", description = "API for finding nearby Jumbo stores")
 public class StoreController {
 
-    //    private final NearByService storeService;
-    private final InMemNearByStore inMemNearByStore;
-    private final QuadTreeNearByService quadTreeNearByService;
-
-    public StoreController(InMemNearByStore inMemNearByStore, QuadTreeNearByService quadTreeNearByService) {
-        this.inMemNearByStore = inMemNearByStore;
-        this.quadTreeNearByService = quadTreeNearByService;
-    }
+    private final NearByService nearByService;
 
     @Operation(
             summary = "Get closest stores",
             description = "Returns a list of the closest stores to the given latitude and longitude.",
-            parameters = {
-                    @Parameter(name = "latitude", description = "Latitude of the location", required = true, example = "52.3702"),
-                    @Parameter(name = "longitude", description = "Longitude of the location", required = true, example = "4.8952"),
-                    @Parameter(name = "limit", description = "Maximum number of stores to return", example = "5"),
-                    @Parameter(name = "onlyOpen", description = "Whether to return only open stores", example = "false")
-            },
             responses = {
                     @ApiResponse(responseCode = "200", description = "List of closest stores",
-                            content = @Content(mediaType = "application/json"))
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = Store.class))),
+                    @ApiResponse(responseCode = "400", description = "Invalid parameters provided"),
+                    @ApiResponse(responseCode = "500", description = "Internal server error")
             }
     )
     @GetMapping("/nearby")
-    public List<Store> getClosestStores(
-            @RequestParam("latitude") double latitude,
-            @RequestParam("longitude") double longitude,
-            @RequestParam(name = "limit", defaultValue = "5") int limit,
-            @RequestParam(name = "onlyOpen", defaultValue = "false") boolean onlyOpen,
-            @RequestParam(name = "st", defaultValue = "in-memory") String strategy
+    public ResponseEntity<List<Store>> getClosestStores(
+            @Parameter(description = "Latitude of the location", required = true, example = "52.3702")
+            @RequestParam("latitude")
+            @DecimalMin(value = "-90.0", message = "Latitude must be between -90 and 90")
+            @DecimalMax(value = "90.0", message = "Latitude must be between -90 and 90")
+                    double latitude,
+
+            @Parameter(description = "Longitude of the location", required = true, example = "4.8952")
+            @RequestParam("longitude")
+            @DecimalMin(value = "-180.0", message = "Longitude must be between -180 and 180")
+            @DecimalMax(value = "180.0", message = "Longitude must be between -180 and 180")
+                    double longitude,
+
+            @Parameter(description = "Maximum number of stores to return", example = "5")
+            @RequestParam(name = "limit", defaultValue = "5")
+            @Min(value = 1, message = "Limit must be at least 1")
+            @Max(value = 50, message = "Limit cannot exceed 50")
+                    int limit,
+
+            @Parameter(description = "Whether to return only open stores", example = "false")
+            @RequestParam(name = "onlyOpen", defaultValue = "false")
+                    boolean onlyOpen
     ) {
-        if (strategy.equalsIgnoreCase("quadtree")) {
-            return quadTreeNearByService.findNearByStores(new NearByRequest(latitude, longitude, limit, onlyOpen));
-        } else {
-            return inMemNearByStore.findNearByStores(new NearByRequest(latitude, longitude, limit, onlyOpen));
-        }
-//        return storeService.findNearByStores(new NearByRequest(latitude, longitude, limit, onlyOpen));
+        log.info("Finding nearby stores for coordinates: lat={}, lon={}, limit={}, onlyOpen={}",
+                latitude, longitude, limit, onlyOpen);
+
+        NearByRequest request = new NearByRequest(latitude, longitude, limit, onlyOpen);
+        List<Store> stores = nearByService.findNearByStores(request);
+
+        log.info("Found {} nearby stores", stores.size());
+        return ResponseEntity.ok(stores);
     }
 }

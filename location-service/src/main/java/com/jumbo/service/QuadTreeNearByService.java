@@ -1,7 +1,5 @@
-package com.jumbo.service.nearby;
+package com.jumbo.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.jumbo.model.Store;
 import com.jumbo.repositoy.StoreRepository;
 import com.jumbo.utils.DistanceCalculator;
@@ -10,7 +8,6 @@ import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.index.quadtree.Quadtree;
 import org.springframework.stereotype.Service;
 
-import java.io.InputStream;
 import java.util.AbstractMap;
 import java.util.Comparator;
 import java.util.List;

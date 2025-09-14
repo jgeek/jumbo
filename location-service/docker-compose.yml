@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  location-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/jumbo
+      - SPRING_DATASOURCE_USERNAME=jumbo
+      - SPRING_DATASOURCE_PASSWORD=jumbo123
+      - JUMBO_LOCATION_SEARCH_STRATEGY=quadtree
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - jumbo-network
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_DB=jumbo
+      - POSTGRES_USER=jumbo
+      - POSTGRES_PASSWORD=jumbo123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U jumbo -d jumbo"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - jumbo-network
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - jumbo-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  jumbo-network:
+    driver: bridge
