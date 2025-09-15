@@ -1,6 +1,7 @@
 package com.jumbo.adapter.in.web;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jumbo.adapter.out.persistence.StoreEntity;
 import com.jumbo.application.domain.model.Store;
 import com.jumbo.application.port.in.NearByRequest;
 import com.jumbo.application.port.in.NearByUseCase;
@@ -11,6 +12,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.List;
 
@@ -20,7 +22,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(StoreController.class)
-class StoreControllerTest {
+class StoreEntityControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -99,8 +101,8 @@ class StoreControllerTest {
         store.setCity(city);
         store.setStreet("Test Street 123");
         store.setPostalCode("1234 AB");
-        store.setTodayOpen("08:00");
-        store.setTodayClose("22:00");
+        store.setTodayOpen(LocalTime.of(8, 0));
+        store.setTodayClose(LocalTime.of(22, 0));
         store.setLocationType("supermarket");
         return store;
     }

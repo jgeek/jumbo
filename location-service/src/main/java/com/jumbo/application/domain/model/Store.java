@@ -1,15 +1,14 @@
 package com.jumbo.application.domain.model;
 
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.jumbo.common.validation.ValidTime;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import lombok.Data;
 
 import java.time.LocalTime;
-import java.time.format.DateTimeParseException;
 
 @Data
 @Schema(description = "Jumbo store information with location details")
@@ -53,12 +52,10 @@ public class Store {
     private boolean showWarningMessage;
 
     @Schema(description = "Opening time for today", example = "08:00")
-    @ValidTime
-    private String todayOpen;
+    private LocalTime todayOpen;
 
     @Schema(description = "Closing time for today", example = "22:00")
-    @ValidTime
-    private String todayClose;
+    private LocalTime todayClose;
 
     @Schema(description = "Type of store location")
     private String locationType;
@@ -75,36 +72,17 @@ public class Store {
 
     @JsonIgnore
     public boolean isOpen() {
-        if (todayOpen == null || todayClose == null ||
-                todayOpen.trim().isEmpty() || todayClose.trim().isEmpty()) {
+        if (todayOpen == null || todayClose == null) {
             return false; // Cannot determine, assume closed
         }
 
-        try {
-            LocalTime openTime = parseTime(todayOpen);
-            LocalTime closeTime = parseTime(todayClose);
-            LocalTime now = LocalTime.now();
+        LocalTime now = LocalTime.now();
 
-            // Handle stores that close after midnight
-            if (closeTime.isBefore(openTime)) {
-                return !now.isBefore(openTime) || !now.isAfter(closeTime);
-            } else {
-                return !now.isBefore(openTime) && !now.isAfter(closeTime);
-            }
-        } catch (DateTimeParseException e) {
-            return false; // If parsing fails, assume closed for safety
+        // Handle stores that close after midnight
+        if (todayClose.isBefore(todayOpen)) {
+            return !now.isBefore(todayOpen) || !now.isAfter(todayClose);
+        } else {
+            return !now.isBefore(todayOpen) && !now.isAfter(todayClose);
         }
-    }
-
-    private LocalTime parseTime(String timeStr) {
-        String[] parts = timeStr.trim().split(":");
-        if (parts.length != 2) {
-            throw new DateTimeParseException("Invalid time format", timeStr, 0);
-        }
-
-        int hour = Integer.parseInt(parts[0]);
-        int minute = Integer.parseInt(parts[1]);
-
-        return LocalTime.of(hour, minute);
     }
 }

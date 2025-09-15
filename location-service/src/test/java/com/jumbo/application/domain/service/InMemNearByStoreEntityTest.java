@@ -1,9 +1,9 @@
 package com.jumbo.application.domain.service;
 
+import com.jumbo.application.domain.model.Store;
 import com.jumbo.application.domain.servcie.HaversineDistanceCalculator;
 import com.jumbo.application.domain.servcie.InMemNearByStore;
 import com.jumbo.application.port.in.NearByRequest;
-import com.jumbo.application.domain.model.Store;
 import com.jumbo.application.port.out.StoreRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class InMemNearByStoreTest {
+class InMemNearByStoreEntityTest {
 
     @Mock
     private StoreRepository storeRepository;
