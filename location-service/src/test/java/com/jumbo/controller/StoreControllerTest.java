@@ -1,9 +1,10 @@
 package com.jumbo.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jumbo.model.Store;
-import com.jumbo.service.NearByRequest;
-import com.jumbo.service.NearByService;
+import com.jumbo.adapter.in.web.StoreController;
+import com.jumbo.application.domain.model.Store;
+import com.jumbo.application.port.in.NearByRequest;
+import com.jumbo.application.port.in.NearByUseCase;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -26,7 +27,7 @@ class StoreControllerTest {
     private MockMvc mockMvc;
 
     @MockBean
-    private NearByService nearByService;
+    private NearByUseCase nearByService;
 
     @Autowired
     private ObjectMapper objectMapper;

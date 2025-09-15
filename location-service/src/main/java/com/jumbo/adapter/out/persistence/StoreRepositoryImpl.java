@@ -1,8 +1,9 @@
-package com.jumbo.repositoy;
+package com.jumbo.adapter.out.persistence;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jumbo.model.Store;
+import com.jumbo.application.port.out.StoreRepository;
+import com.jumbo.application.domain.model.Store;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;

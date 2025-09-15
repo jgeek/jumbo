@@ -1,4 +1,4 @@
-package com.jumbo.exception;
+package com.jumbo.adapter.in.web.exception;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;

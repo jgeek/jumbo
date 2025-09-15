@@ -1,8 +1,8 @@
 package com.jumbo.config;
 
-import com.jumbo.service.InMemNearByStore;
-import com.jumbo.service.NearByService;
-import com.jumbo.service.QuadTreeNearByService;
+import com.jumbo.application.domain.servcie.InMemNearByStore;
+import com.jumbo.application.port.in.NearByUseCase;
+import com.jumbo.application.domain.servcie.QuadTreeNearByService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -18,7 +18,7 @@ public class NearByServiceConfig {
 
     @Bean
     @Primary
-    public NearByService nearByService(InMemNearByStore inMemNearByStore,
+    public NearByUseCase nearByService(InMemNearByStore inMemNearByStore,
                                        QuadTreeNearByService quadTreeNearByService) {
         log.info("Configuring NearByService with strategy: {}", searchStrategy);
 

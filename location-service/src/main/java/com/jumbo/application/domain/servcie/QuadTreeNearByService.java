@@ -1,8 +1,9 @@
-package com.jumbo.service;
+package com.jumbo.application.domain.servcie;
 
-import com.jumbo.model.Store;
-import com.jumbo.repositoy.StoreRepository;
-import com.jumbo.utils.DistanceCalculator;
+import com.jumbo.application.port.in.NearByRequest;
+import com.jumbo.application.port.in.NearByUseCase;
+import com.jumbo.application.domain.model.Store;
+import com.jumbo.application.port.out.StoreRepository;
 import jakarta.annotation.PostConstruct;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.index.quadtree.Quadtree;
@@ -15,13 +16,16 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
-public class QuadTreeNearByService implements NearByService {
+public class QuadTreeNearByService implements NearByUseCase {
 
     private Quadtree quadtree;
     private final StoreRepository storeRepository;
+    private final DistanceCalculator distanceCalculator;
 
-    public QuadTreeNearByService(StoreRepository storeRepository) {
+
+    public QuadTreeNearByService(StoreRepository storeRepository, DistanceCalculator distanceCalculator) {
         this.storeRepository = storeRepository;
+        this.distanceCalculator = distanceCalculator;
     }
 
 
@@ -52,11 +56,11 @@ public class QuadTreeNearByService implements NearByService {
 
             if (filtered.size() >= req.limit() || searchRadiusKm == maxRadiusKm) {
                 return filtered.stream()
-                        .map(s -> new AbstractMap.SimpleEntry<>
-                                (s, DistanceCalculator.distance(req.latitude(), req.longitude(), s.getLatitude(), s.getLongitude())))
-                        .sorted(Comparator.comparingDouble(Map.Entry::getValue))
+                        .peek(store -> store.setDistance(distanceCalculator.distanceInKm(
+                                req.latitude(), req.longitude(),
+                                store.getLatitude(), store.getLongitude())))
+                        .sorted(Comparator.comparingDouble(Store::getDistance))
                         .limit(req.limit())
-                        .map(Map.Entry::getKey)
                         .collect(Collectors.toList());
             }
             searchRadiusKm *= 2; // expand search area
@@ -64,6 +68,14 @@ public class QuadTreeNearByService implements NearByService {
         return List.of();
     }
 
+    /*
+    Creates creates a square bounding box (Envelope) around a geographic point (latitude, longitude)
+    with a given search radius in kilometers. It approximates the conversion from kilometers to degrees
+    using 1 degree ≈ 111 km (valid near the equator).
+    The method calculates the degree offset (delta) for the radius,
+    then constructs an Envelope with min/max longitude and latitude expanded by delta from the center point.
+    This envelope is used to query the quadtree for nearby stores.
+     */
     private Envelope makeEnvelope(double lat, double lon, double radiusKm) {
         // rough conversion: 1 degree lat ~ 111 km
         double delta = radiusKm / 111.0;

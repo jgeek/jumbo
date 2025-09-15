@@ -1,11 +1,14 @@
-package com.jumbo.utils;
+package com.jumbo.application.domain.servcie;
 
-public class DistanceCalculator {
+import org.springframework.stereotype.Service;
+
+@Service
+public class HaversineDistanceCalculator implements DistanceCalculator {
 
     private static final double EARTH_RADIUS_KM = 6371.0;
 
     // Haversine formula to calculate distance in kilometers
-    public static double distance(double lat1, double lon1, double lat2, double lon2) {
+    public double distanceInKm(double lat1, double lon1, double lat2, double lon2) {
         double latDistance = Math.toRadians(lat2 - lat1);
         double lonDistance = Math.toRadians(lon2 - lon1);
 

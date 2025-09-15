@@ -1,8 +1,11 @@
-package com.jumbo.model;
+package com.jumbo.application.domain.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.jumbo.common.validation.ValidTime;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.DecimalMin;
 import lombok.Data;
 
 import java.time.LocalTime;
@@ -34,9 +37,13 @@ public class Store {
     private String uuid;
 
     @Schema(description = "Longitude coordinate", example = "4.8952")
+    @DecimalMin(value = "-180.0", message = "Longitude must be greater than or equal to -180.0")
+    @DecimalMax(value = "180.0", message = "Longitude must be less than or equal to 180.0")
     private double longitude;
 
     @Schema(description = "Latitude coordinate", example = "52.3702")
+    @DecimalMin(value = "-90.0", message = "Latitude must be greater than or equal to -90.0")
+    @DecimalMax(value = "90.0", message = "Latitude must be less than or equal to 90.0")
     private double latitude;
 
     @Schema(description = "Complex number identifier")
@@ -46,9 +53,11 @@ public class Store {
     private boolean showWarningMessage;
 
     @Schema(description = "Opening time for today", example = "08:00")
+    @ValidTime
     private String todayOpen;
 
     @Schema(description = "Closing time for today", example = "22:00")
+    @ValidTime
     private String todayClose;
 
     @Schema(description = "Type of store location")

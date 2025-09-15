@@ -1,8 +1,9 @@
-package com.jumbo.service;
+package com.jumbo.application.domain.servcie;
 
-import com.jumbo.model.Store;
-import com.jumbo.repositoy.StoreRepository;
-import com.jumbo.utils.DistanceCalculator;
+import com.jumbo.application.port.in.NearByRequest;
+import com.jumbo.application.port.in.NearByUseCase;
+import com.jumbo.application.domain.model.Store;
+import com.jumbo.application.port.out.StoreRepository;
 import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Service;
 
@@ -11,13 +12,16 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-public class InMemNearByStore implements NearByService {
+public class InMemNearByStore implements NearByUseCase {
 
     private List<Store> stores;
     private final StoreRepository storeRepository;
+    private final DistanceCalculator distanceCalculator;
 
-    public InMemNearByStore(StoreRepository storeRepository) {
+
+    public InMemNearByStore(StoreRepository storeRepository, DistanceCalculator distanceCalculator) {
         this.storeRepository = storeRepository;
+        this.distanceCalculator = distanceCalculator;
     }
 
     @PostConstruct
@@ -28,7 +32,7 @@ public class InMemNearByStore implements NearByService {
     public List<Store> findNearByStores(NearByRequest req) {
         return stores.stream()
                 .filter(store -> !req.onlyOpen() || store.isOpen())
-                .peek(store -> store.setDistance(DistanceCalculator.distance(
+                .peek(store -> store.setDistance(distanceCalculator.distanceInKm(
                         req.latitude(), req.longitude(),
                         store.getLatitude(), store.getLongitude())))
                 .sorted(Comparator.comparingDouble(Store::getDistance))

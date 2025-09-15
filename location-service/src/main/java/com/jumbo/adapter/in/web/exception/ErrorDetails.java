@@ -1,4 +1,4 @@
-package com.jumbo.exception;
+package com.jumbo.adapter.in.web.exception;
 
 import lombok.Builder;
 import lombok.Data;

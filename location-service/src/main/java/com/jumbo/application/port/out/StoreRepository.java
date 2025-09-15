@@ -1,6 +1,6 @@
-package com.jumbo.repositoy;
+package com.jumbo.application.port.out;
 
-import com.jumbo.model.Store;
+import com.jumbo.application.domain.model.Store;
 
 import java.io.IOException;
 import java.util.List;

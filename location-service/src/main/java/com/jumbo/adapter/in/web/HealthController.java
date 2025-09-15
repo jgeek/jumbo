@@ -1,4 +1,4 @@
-package com.jumbo.controller;
+package com.jumbo.adapter.in.web;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;

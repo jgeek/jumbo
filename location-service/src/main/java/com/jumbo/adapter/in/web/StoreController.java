@@ -1,8 +1,8 @@
-package com.jumbo.controller;
+package com.jumbo.adapter.in.web;
 
-import com.jumbo.model.Store;
-import com.jumbo.service.NearByRequest;
-import com.jumbo.service.NearByService;
+import com.jumbo.application.domain.model.Store;
+import com.jumbo.application.port.in.NearByRequest;
+import com.jumbo.application.port.in.NearByUseCase;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -29,7 +29,7 @@ import java.util.List;
 @Tag(name = "Store Location API", description = "API for finding nearby Jumbo stores")
 public class StoreController {
 
-    private final NearByService nearByService;
+    private final NearByUseCase nearByService;
 
     @Operation(
             summary = "Get closest stores",

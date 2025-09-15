@@ -1,4 +1,4 @@
-package com.jumbo.exception;
+package com.jumbo.adapter.in.web.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolation;
