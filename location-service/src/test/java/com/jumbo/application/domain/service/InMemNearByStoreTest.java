@@ -1,4 +1,4 @@
-package com.jumbo.service;
+package com.jumbo.application.domain.service;
 
 import com.jumbo.application.domain.servcie.HaversineDistanceCalculator;
 import com.jumbo.application.domain.servcie.InMemNearByStore;

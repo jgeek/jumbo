@@ -17,7 +17,6 @@ public class NearByServiceConfig {
     private String searchStrategy;
 
     @Bean
-    @Primary
     public NearByUseCase nearByService(InMemNearByStore inMemNearByStore,
                                        QuadTreeNearByService quadTreeNearByService) {
         log.info("Configuring NearByService with strategy: {}", searchStrategy);

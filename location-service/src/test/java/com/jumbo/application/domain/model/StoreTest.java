@@ -1,6 +1,5 @@
-package com.jumbo.model;
+package com.jumbo.application.domain.model;
 
-import com.jumbo.application.domain.model.Store;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalTime;

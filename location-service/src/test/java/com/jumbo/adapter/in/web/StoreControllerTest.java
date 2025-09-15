@@ -1,7 +1,6 @@
-package com.jumbo.controller;
+package com.jumbo.adapter.in.web;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jumbo.adapter.in.web.StoreController;
 import com.jumbo.application.domain.model.Store;
 import com.jumbo.application.port.in.NearByRequest;
 import com.jumbo.application.port.in.NearByUseCase;
