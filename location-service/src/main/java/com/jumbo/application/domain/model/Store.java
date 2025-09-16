@@ -3,10 +3,13 @@ package com.jumbo.application.domain.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.jumbo.common.validation.Validation;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import lombok.Data;
+import org.hibernate.validator.constraints.Range;
 
 import java.time.LocalTime;
 
@@ -69,6 +72,22 @@ public class Store {
     @Schema(description = "Distance from search coordinates in kilometers", example = "1.23")
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private transient double distance;
+
+    public Store opensAt(int hour, int minute) {
+        if (hour < 0 || hour > 23) {
+            throw new IllegalArgumentException("Hour must be between 0 and 23");
+        }
+        if (minute < 0 || minute > 59) {
+            throw new IllegalArgumentException("Minute must be between 0 and 59");
+        }
+        this.todayOpen = LocalTime.of(hour, minute);
+        return this;
+    }
+
+    public Store closesAt(int hour, int minute) {
+        this.todayClose = LocalTime.of(hour, minute);
+        return this;
+    }
 
     @JsonIgnore
     public boolean isOpen() {
