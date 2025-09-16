@@ -29,34 +29,61 @@ const App: React.FC = () => {
   // Get user's current location
   const getUserLocation = () => {
     setLoading(true);
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const lat = position.coords.latitude;
-          const lng = position.coords.longitude;
-          setUserLocation([lat, lng]);
-          setInputCoords({
-            latitude: lat,
-            longitude: lng
-          });
-          setMapCenter([lat, lng]);
-          setSearchParams(prev => ({
-            ...prev,
-            latitude: lat,
-            longitude: lng
-          }));
-          setLoading(false);
-        },
-        (error) => {
-          console.error('Error getting location:', error);
-          setError('Unable to get your location. Using default location (Amsterdam).');
-          setLoading(false);
-        }
-      );
-    } else {
+    setError(null);
+
+    if (!navigator.geolocation) {
       setError('Geolocation is not supported by this browser.');
       setLoading(false);
+      return;
     }
+
+    // Enhanced geolocation options
+    const options = {
+      enableHighAccuracy: true,
+      timeout: 10000, // 10 seconds timeout
+      maximumAge: 300000 // Accept cached position up to 5 minutes old
+    };
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
+        setUserLocation([lat, lng]);
+        setInputCoords({
+          latitude: lat,
+          longitude: lng
+        });
+        setMapCenter([lat, lng]);
+        setSearchParams(prev => ({
+          ...prev,
+          latitude: lat,
+          longitude: lng
+        }));
+        setLoading(false);
+        setError(null);
+        console.log('Location found:', { lat, lng, accuracy: position.coords.accuracy });
+      },
+      (error) => {
+        console.error('Geolocation error:', error);
+        setLoading(false);
+
+        switch(error.code) {
+          case error.PERMISSION_DENIED:
+            setError('Location access denied. Please allow location access in your browser settings and try again.');
+            break;
+          case error.POSITION_UNAVAILABLE:
+            setError('Location information is unavailable. This might be due to poor GPS signal or network issues. Using default location (Amsterdam).');
+            break;
+          case error.TIMEOUT:
+            setError('Location request timed out. Please try again or check your GPS/network connection.');
+            break;
+          default:
+            setError('An unknown error occurred while retrieving location. Using default location (Amsterdam).');
+            break;
+        }
+      },
+      options
+    );
   };
 
   // Fetch nearby stores and update map center
