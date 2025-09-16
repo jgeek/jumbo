@@ -90,7 +90,7 @@ const App: React.FC = () => {
       };
 
       navigator.geolocation.getCurrentPosition(
-        (position) => {
+        async (position) => {
           const lat = position.coords.latitude;
           const lng = position.coords.longitude;
           setUserLocation([lat, lng]);
@@ -99,13 +99,32 @@ const App: React.FC = () => {
             longitude: lng
           });
           setMapCenter([lat, lng]);
-          setSearchParams(prev => ({
-            ...prev,
+
+          const updatedSearchParams = {
+            ...searchParams,
             latitude: lat,
             longitude: lng
-          }));
+          };
+          setSearchParams(updatedSearchParams);
+
+          // Automatically search for stores at the user's location
+          try {
+            const fetchedStores = await storeService.getClosestStores(updatedSearchParams);
+            setStores(fetchedStores);
+            setError(null);
+          } catch (err: any) {
+            // Handle DetailedError from storeService or fallback to simple message
+            if (err && typeof err === 'object' && 'message' in err) {
+              setError(err as DetailedError);
+            } else {
+              setError({ message: 'Failed to fetch nearby stores at your location. Please try again.' });
+            }
+            console.error('Error fetching stores at user location:', err);
+            // Clear stores when there's an error to show no results
+            setStores([]);
+          }
+
           setLoading(false);
-          setError(null);
           console.log('Location found:', { lat, lng, accuracy: position.coords.accuracy });
         },
         (error) => {
