@@ -1,7 +1,5 @@
 package com.jumbo.adapter.in.web;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jumbo.adapter.out.persistence.StoreEntity;
 import com.jumbo.application.domain.model.Store;
 import com.jumbo.application.port.in.NearByRequest;
 import com.jumbo.application.port.in.NearByUseCase;
@@ -17,7 +15,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -30,20 +28,16 @@ class StoreEntityControllerTest {
     @MockBean
     private NearByUseCase nearByService;
 
-    @Autowired
-    private ObjectMapper objectMapper;
-
     @Test
     void getClosestStores_ValidRequest_ReturnsStores() throws Exception {
-        // Arrange
+
         Store store1 = createTestStore("store1", 52.3702, 4.8952, "Amsterdam");
         Store store2 = createTestStore("store2", 52.3603, 4.8849, "Amsterdam");
         List<Store> expectedStores = Arrays.asList(store1, store2);
 
-        when(nearByService.findNearByStores(any(NearByRequest.class)))
+        when(nearByService.findNearByStores(any(NearByRequest.class), any(LocalTime.class)))
                 .thenReturn(expectedStores);
 
-        // Act & Assert
         mockMvc.perform(get("/api/v1/stores/nearby")
                         .param("latitude", "52.3702")
                         .param("longitude", "4.8952")
@@ -101,8 +95,8 @@ class StoreEntityControllerTest {
         store.setCity(city);
         store.setStreet("Test Street 123");
         store.setPostalCode("1234 AB");
-        store.setTodayOpen(LocalTime.of(8, 0));
-        store.setTodayClose(LocalTime.of(22, 0));
+        store.opensAt(8, 0);
+        store.closesAt(22, 0);
         store.setLocationType("supermarket");
         return store;
     }

@@ -77,7 +77,7 @@ GET /api/v1/stores/nearby?latitude=52.3702&longitude=4.8952&limit=5&onlyOpen=fal
     "longitude": 4.8952,
     "todayOpen": "08:00",
     "todayClose": "22:00",
-    "distance": 0.0,
+    "maxRadiusKm": 0.0,
     "locationType": "supermarket",
     "collectionPoint": false
   }
@@ -93,7 +93,7 @@ jumbo:
   location:
     search:
       strategy: quadtree  # Options: quadtree, in-memory
-      max-distance-km: 50
+      max-maxRadiusKm-km: 50
     stores:
       data-file: classpath:stores.json
       cache-enabled: true

@@ -9,6 +9,7 @@ import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.index.quadtree.Quadtree;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -39,24 +40,24 @@ public class QuadTreeNearByService implements NearByUseCase {
     }
 
     @Override
-    public List<Store> findNearByStores(NearByRequest req) {
+    public List<Store> findNearByStores(NearByRequest req, LocalTime now) {
         double searchRadiusKm = 1.0; // start with 1 km
-        double maxRadiusKm = 100.0;  // max search limit
 
-        while (searchRadiusKm <= maxRadiusKm) {
+        while (searchRadiusKm <= req.maxRadiusKm()) {
             Envelope env = makeEnvelope(req.latitude(), req.longitude(), searchRadiusKm);
             @SuppressWarnings("unchecked")
             List<Store> found = quadtree.query(env);
 
             List<Store> filtered = found.stream()
-                    .filter(s -> !req.onlyOpen() || s.isOpen())
+                    .filter(s -> !req.onlyOpen() || s.isOpen(now))
                     .toList();
 
-            if (filtered.size() >= req.limit() || searchRadiusKm == maxRadiusKm) {
+            if (filtered.size() >= req.limit() || searchRadiusKm == req.maxRadiusKm()) {
                 return filtered.stream()
                         .peek(store -> store.setDistance(distanceCalculator.distanceInKm(
                                 req.latitude(), req.longitude(),
                                 store.getLatitude(), store.getLongitude())))
+                        .filter(s -> s.getDistance() <= req.maxRadiusKm())
                         .sorted(Comparator.comparingDouble(Store::getDistance))
                         .limit(req.limit())
                         .collect(Collectors.toList());

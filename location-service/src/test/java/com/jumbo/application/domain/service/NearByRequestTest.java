@@ -10,49 +10,49 @@ class NearByRequestTest {
 
     @Test
     void createsInstanceWithValidValues() {
-        assertDoesNotThrow(() -> new NearByRequest(52.0, 4.0, 5, true));
-        assertDoesNotThrow(() -> new NearByRequest(-45.123, 100.987, 1, false));
+        assertDoesNotThrow(() -> new NearByRequest(52.0, 4.0, 1, 5, true));
+        assertDoesNotThrow(() -> new NearByRequest(-45.123, 100.987, 1, 1, false));
     }
 
     @Test
     void acceptsBoundaryValuesForLatitudeAndLongitude() {
-        assertDoesNotThrow(() -> new NearByRequest(-90.0, -180.0, 1, false));
-        assertDoesNotThrow(() -> new NearByRequest(90.0, 180.0, 1, true));
+        assertDoesNotThrow(() -> new NearByRequest(-90.0, -180.0, 1, 1, false));
+        assertDoesNotThrow(() -> new NearByRequest(90.0, 180.0, 1, 1, true));
     }
 
     @Test
     void throwsConstraintViolationWhenLimitIsZero() {
         assertThrows(jakarta.validation.ConstraintViolationException.class,
-                () -> new NearByRequest(0.0, 0.0, 0, false));
+                () -> new NearByRequest(0.0, 0.0, 1, 0, false));
     }
 
     @Test
     void throwsConstraintViolationWhenLimitIsNegative() {
         assertThrows(jakarta.validation.ConstraintViolationException.class,
-                () -> new NearByRequest(0.0, 0.0, -1, true));
+                () -> new NearByRequest(0.0, 0.0, 1, -1, true));
     }
 
     @Test
     void throwsConstraintViolationWhenLatitudeTooLow() {
         assertThrows(jakarta.validation.ConstraintViolationException.class,
-                () -> new NearByRequest(-90.0001, 0.0, 1, false));
+                () -> new NearByRequest(-90.0001, 0.0, 1, 1, false));
     }
 
     @Test
     void throwsConstraintViolationWhenLatitudeTooHigh() {
         assertThrows(jakarta.validation.ConstraintViolationException.class,
-                () -> new NearByRequest(90.0001, 0.0, 1, false));
+                () -> new NearByRequest(90.0001, 0.0, 1, 1, false));
     }
 
     @Test
     void throwsConstraintViolationWhenLongitudeTooLow() {
         assertThrows(jakarta.validation.ConstraintViolationException.class,
-                () -> new NearByRequest(0.0, -180.0001, 1, true));
+                () -> new NearByRequest(0.0, -180.0001, 1, 1, true));
     }
 
     @Test
     void throwsConstraintViolationWhenLongitudeTooHigh() {
         assertThrows(jakarta.validation.ConstraintViolationException.class,
-                () -> new NearByRequest(0.0, 180.0001, 1, true));
+                () -> new NearByRequest(0.0, 180.0001, 1, 1, true));
     }
 }

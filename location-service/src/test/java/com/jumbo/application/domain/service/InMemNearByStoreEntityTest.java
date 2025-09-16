@@ -11,6 +11,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.Mock;
 import org.mockito.quality.Strictness;
 
+import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
@@ -28,6 +29,7 @@ class InMemNearByStoreEntityTest {
         Store store = mock(Store.class, withSettings().strictness(Strictness.LENIENT));
         when(store.getLatitude()).thenReturn(lat);
         when(store.getLongitude()).thenReturn(lon);
+        when(store.isOpen(any(LocalTime.class))).thenReturn(open);
         when(store.isOpen()).thenReturn(open);
 
         AtomicReference<Double> distanceRef = new AtomicReference<>(Double.NaN);
@@ -55,8 +57,8 @@ class InMemNearByStoreEntityTest {
 
         InMemNearByStore service = createServiceWithStores(s1, s2, s3);
 
-        NearByRequest req = new NearByRequest(0.0, 0.0, 2, true);
-        List<Store> result = service.findNearByStores(req);
+        NearByRequest req = new NearByRequest(0.0, 0.0, 1, 2, true);
+        List<Store> result = service.findNearByStores(req, LocalTime.now());
 
         assertEquals(2, result.size());
         assertIterableEquals(List.of(s1, s2), result);
@@ -72,8 +74,8 @@ class InMemNearByStoreEntityTest {
 
         InMemNearByStore service = createServiceWithStores(s1, s2, s3);
 
-        NearByRequest req = new NearByRequest(0.0, 0.0, 10, false);
-        List<Store> result = service.findNearByStores(req);
+        NearByRequest req = new NearByRequest(0.0, 0.0, 1, 10, false);
+        List<Store> result = service.findNearByStores(req, LocalTime.now());
 
         assertIterableEquals(List.of(s2, s3, s1), result);
         assertTrue(result.get(0).getDistance() <= result.get(1).getDistance());
@@ -84,8 +86,8 @@ class InMemNearByStoreEntityTest {
     void returnsEmptyListWhenNoStoresAvailable() throws Exception {
         InMemNearByStore service = createServiceWithStores();
 
-        NearByRequest req = new NearByRequest(0.0, 0.0, 5, false);
-        List<Store> result = service.findNearByStores(req);
+        NearByRequest req = new NearByRequest(0.0, 0.0, 1, 5, false);
+        List<Store> result = service.findNearByStores(req, LocalTime.now());
 
         assertTrue(result.isEmpty());
     }
@@ -97,8 +99,8 @@ class InMemNearByStoreEntityTest {
 
         InMemNearByStore service = createServiceWithStores(s1, s2);
 
-        NearByRequest req = new NearByRequest(0.0, 0.0, 1, false);
-        List<Store> result = service.findNearByStores(req);
+        NearByRequest req = new NearByRequest(0.0, 0.0, 1, 1, false);
+        List<Store> result = service.findNearByStores(req, LocalTime.now());
 
         assertEquals(1, result.size());
         assertEquals(s1, result.get(0));
@@ -111,8 +113,8 @@ class InMemNearByStoreEntityTest {
 
         InMemNearByStore service = createServiceWithStores(s1, s2);
 
-        NearByRequest req = new NearByRequest(0.0, 0.0, 5, true);
-        List<Store> result = service.findNearByStores(req);
+        NearByRequest req = new NearByRequest(0.0, 0.0, 1, 5, true);
+        List<Store> result = service.findNearByStores(req, LocalTime.now());
 
         assertTrue(result.isEmpty());
     }
@@ -124,10 +126,28 @@ class InMemNearByStoreEntityTest {
 
         InMemNearByStore service = createServiceWithStores(s1, s2);
 
-        List<Store> first = service.findNearByStores(new NearByRequest(0.0, 0.0, 5, false));
+        List<Store> first = service.findNearByStores(new NearByRequest(0.0, 0.0, 1, 5, false), LocalTime.now());
         assertIterableEquals(List.of(s2, s1), first);
 
-        List<Store> second = service.findNearByStores(new NearByRequest(0.0, 0.14, 5, false));
+        List<Store> second = service.findNearByStores(new NearByRequest(0.0, 0.14, 1, 5, false), LocalTime.now());
         assertIterableEquals(List.of(s1, s2), second);
+    }
+
+    @Test
+    void returnsOnlyStoresWithinMaxRadiusKm() throws Exception {
+        Store s1 = mockStore(0.0, 0.001, true);  // very close
+        Store s2 = mockStore(0.0, 0.002, true);  // farther away
+        Store s3 = mockStore(0.0, 1.00, true);  // outside radius
+
+        InMemNearByStore service = createServiceWithStores(s1, s2, s3);
+
+        // Set maxRadiusKm to a value that includes s1 and s2, but excludes s3
+        NearByRequest req = new NearByRequest(0.0, 0.0, 1, 10, false);
+        List<Store> result = service.findNearByStores(req, LocalTime.now());
+
+        assertTrue(result.contains(s1));
+        assertTrue(result.contains(s2));
+        assertFalse(result.contains(s3));
+        assertTrue(result.stream().allMatch(store -> store.getDistance() <= req.maxRadiusKm()));
     }
 }

@@ -19,6 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalTime;
 import java.util.List;
 
 @RestController
@@ -44,33 +45,40 @@ public class StoreController {
     )
     @GetMapping("/nearby")
     public ResponseEntity<List<Store>> getClosestStores(
+
             @Parameter(description = "Latitude of the location", required = true, example = "52.3702")
             @RequestParam("latitude")
             @DecimalMin(value = "-90.0", message = "Latitude must be between -90 and 90")
             @DecimalMax(value = "90.0", message = "Latitude must be between -90 and 90")
-                    double latitude,
+            double latitude,
 
             @Parameter(description = "Longitude of the location", required = true, example = "4.8952")
             @RequestParam("longitude")
             @DecimalMin(value = "-180.0", message = "Longitude must be between -180 and 180")
             @DecimalMax(value = "180.0", message = "Longitude must be between -180 and 180")
-                    double longitude,
+            double longitude,
+
+            @Parameter(description = "Maximum search radius in kilometers", example = "5.0")
+            @RequestParam(name = "maxRadius", defaultValue = "5.0")
+            @Min(value = 1, message = "Radius must be at least 1 km")
+            @Max(value = 100, message = "Radius cannot exceed 100 km")
+            double maxRadius,
 
             @Parameter(description = "Maximum number of stores to return", example = "5")
             @RequestParam(name = "limit", defaultValue = "5")
             @Min(value = 1, message = "Limit must be at least 1")
             @Max(value = 50, message = "Limit cannot exceed 50")
-                    int limit,
+            int limit,
 
             @Parameter(description = "Whether to return only open stores", example = "false")
             @RequestParam(name = "onlyOpen", defaultValue = "false")
-                    boolean onlyOpen
+            boolean onlyOpen
     ) {
         log.info("Finding nearby stores for coordinates: lat={}, lon={}, limit={}, onlyOpen={}",
                 latitude, longitude, limit, onlyOpen);
 
-        NearByRequest request = new NearByRequest(latitude, longitude, limit, onlyOpen);
-        List<Store> stores = nearByService.findNearByStores(request);
+        NearByRequest request = new NearByRequest(latitude, longitude, maxRadius, limit, onlyOpen);
+        List<Store> stores = nearByService.findNearByStores(request, LocalTime.now());
 
         log.info("Found {} nearby stores", stores.size());
         return ResponseEntity.ok(stores);
