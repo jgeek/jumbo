@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { Store, NearByRequest } from './types';
+import { Store, NearByRequest, ApiErrorResponse, DetailedError } from './types';
 
 const API_BASE_URL = 'http://localhost:8080/api/v1';
 
@@ -22,9 +22,24 @@ export const storeService = {
         }
       });
       return response.data;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching nearby stores:', error);
-      throw error;
+
+      // Parse API error response if available
+      if (error.response?.data) {
+        const apiError: ApiErrorResponse = error.response.data;
+        const detailedError: DetailedError = {
+          message: apiError.message || apiError.error || 'An error occurred',
+          validationErrors: apiError.validationErrors
+        };
+        throw detailedError;
+      }
+
+      // Fallback for network or other errors
+      throw {
+        message: 'Failed to fetch nearby stores. Please check your connection and try again.',
+        validationErrors: undefined
+      } as DetailedError;
     }
   }
 };

@@ -110,6 +110,40 @@
   border: 1px solid #f5c6cb;
 }
 
+.error-main {
+  font-weight: 500;
+  margin-bottom: 10px;
+}
+
+.validation-errors {
+  margin-top: 15px;
+  padding-top: 10px;
+  border-top: 1px solid #f5c6cb;
+}
+
+.validation-errors h4 {
+  margin: 0 0 10px 0;
+  font-size: 14px;
+  color: #721c24;
+  font-weight: 600;
+}
+
+.validation-errors ul {
+  margin: 0;
+  padding-left: 20px;
+  list-style-type: disc;
+}
+
+.validation-errors li {
+  margin-bottom: 5px;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.validation-errors li strong {
+  color: #5a1a1a;
+}
+
 .loading-message {
   background-color: #d1ecf1;
   color: #0c5460;
@@ -178,6 +212,77 @@
   border: 1px solid #ffeaa7;
 }
 
+.cities-section {
+  margin-bottom: 25px;
+  padding: 20px;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-radius: 10px;
+  border: 1px solid #dee2e6;
+}
+
+.cities-section h3 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  color: #333;
+  font-size: 1.2rem;
+  border-bottom: 2px solid #FF6900;
+  padding-bottom: 8px;
+}
+
+.cities-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.city-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 8px;
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 500;
+  font-size: 14px;
+  color: #333;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.city-button:hover:not(:disabled) {
+  background: linear-gradient(135deg, #FF6900 0%, #e55a00 100%);
+  color: white;
+  border-color: #FF6900;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(255, 105, 0, 0.3);
+}
+
+.city-button:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(255, 105, 0, 0.3);
+}
+
+.city-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: #f5f5f5;
+  color: #999;
+}
+
+.city-button small {
+  font-size: 11px;
+  opacity: 0.8;
+  margin-top: 2px;
+  font-weight: 400;
+}
+
+.city-button:hover:not(:disabled) small {
+  opacity: 0.9;
+}
+
 @media (max-width: 768px) {
   .control-group {
     flex-direction: column;
@@ -193,5 +298,19 @@
 
   .App-header h1 {
     font-size: 2rem;
+  }
+
+  .cities-grid {
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 8px;
+  }
+
+  .city-button {
+    padding: 10px 6px;
+    font-size: 12px;
+  }
+
+  .city-button small {
+    font-size: 10px;
   }
 }

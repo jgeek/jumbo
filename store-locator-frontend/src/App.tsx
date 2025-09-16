@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import StoreMap from './StoreMap';
-import { Store } from './types';
+import { Store, DetailedError } from './types';
 import { storeService } from './storeService';
 import './App.css';
 
 const App: React.FC = () => {
   const [stores, setStores] = useState<Store[]>([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<DetailedError | null>(null);
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
 
   // Separate input coordinates from map center coordinates
@@ -26,13 +26,29 @@ const App: React.FC = () => {
     onlyOpen: false
   });
 
+  // Famous cities in Netherlands
+  const famousCities = [
+    // Netherlands
+    { name: 'Amsterdam', country: 'Netherlands', latitude: 52.3676, longitude: 4.9041, flag: '🇳🇱' },
+    { name: 'Rotterdam', country: 'Netherlands', latitude: 51.9244, longitude: 4.4777, flag: '🇳🇱' },
+    { name: 'The Hague', country: 'Netherlands', latitude: 52.0705, longitude: 4.3007, flag: '🇳🇱' },
+    { name: 'Utrecht', country: 'Netherlands', latitude: 52.0907, longitude: 5.1214, flag: '🇳🇱' },
+    { name: 'Eindhoven', country: 'Netherlands', latitude: 51.4416, longitude: 5.4697, flag: '🇳🇱' },
+    { name: 'Tilburg', country: 'Netherlands', latitude: 51.5555, longitude: 5.0913, flag: '🇳🇱' },
+    { name: 'Groningen', country: 'Netherlands', latitude: 53.2194, longitude: 6.5665, flag: '🇳🇱' },
+    { name: 'Almere', country: 'Netherlands', latitude: 52.3508, longitude: 5.2647, flag: '🇳🇱' },
+    { name: 'Breda', country: 'Netherlands', latitude: 51.5719, longitude: 4.7683, flag: '🇳🇱' },
+    { name: 'Nijmegen', country: 'Netherlands', latitude: 51.8426, longitude: 5.8517, flag: '🇳🇱' },
+    { name: 'Veghel', country: 'Netherlands', latitude: 51.6161, longitude: 5.5522, flag: '🇳🇱' }
+  ];
+
   // Get user's current location
   const getUserLocation = () => {
     setLoading(true);
     setError(null);
 
     if (!navigator.geolocation) {
-      setError('Geolocation is not supported by this browser.');
+      setError({ message: 'Geolocation is not supported by this browser.' });
       setLoading(false);
       return;
     }
@@ -67,20 +83,22 @@ const App: React.FC = () => {
         console.error('Geolocation error:', error);
         setLoading(false);
 
+        let errorMessage = '';
         switch(error.code) {
           case error.PERMISSION_DENIED:
-            setError('Location access denied. Please allow location access in your browser settings and try again.');
+            errorMessage = 'Location access denied. Please allow location access in your browser settings and try again.';
             break;
           case error.POSITION_UNAVAILABLE:
-            setError('Location information is unavailable. This might be due to poor GPS signal or network issues. Using default location (Amsterdam).');
+            errorMessage = 'Location information is unavailable. This might be due to poor GPS signal or network issues. Using default location (Amsterdam).';
             break;
           case error.TIMEOUT:
-            setError('Location request timed out. Please try again or check your GPS/network connection.');
+            errorMessage = 'Location request timed out. Please try again or check your GPS/network connection.';
             break;
           default:
-            setError('An unknown error occurred while retrieving location. Using default location (Amsterdam).');
+            errorMessage = 'An unknown error occurred while retrieving location. Using default location (Amsterdam).';
             break;
         }
+        setError({ message: errorMessage });
       },
       options
     );
@@ -105,8 +123,13 @@ const App: React.FC = () => {
       const fetchedStores = await storeService.getClosestStores(currentSearchParams);
       setStores(fetchedStores);
       setSearchParams(currentSearchParams);
-    } catch (err) {
-      setError('Failed to fetch nearby stores. Please try again.');
+    } catch (err: any) {
+      // Handle DetailedError from storeService or fallback to simple message
+      if (err && typeof err === 'object' && 'message' in err) {
+        setError(err as DetailedError);
+      } else {
+        setError({ message: 'Failed to fetch nearby stores. Please try again.' });
+      }
       console.error('Error fetching stores:', err);
     } finally {
       setLoading(false);
@@ -134,6 +157,47 @@ const App: React.FC = () => {
     }));
   };
 
+  // Set location to a famous city
+  const setLocationToCity = (city: typeof famousCities[0]) => {
+    setInputCoords({
+      latitude: city.latitude,
+      longitude: city.longitude
+    });
+    setMapCenter([city.latitude, city.longitude]);
+    setUserLocation(null); // Clear user's GPS location when selecting a city
+
+    // Automatically search for stores in the selected city
+    const citySearchParams = {
+      ...searchParams,
+      latitude: city.latitude,
+      longitude: city.longitude
+    };
+
+    setSearchParams(citySearchParams);
+    searchStoresInCity(citySearchParams);
+  };
+
+  // Search for stores in selected city
+  const searchStoresInCity = async (cityParams: typeof searchParams) => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const fetchedStores = await storeService.getClosestStores(cityParams);
+      setStores(fetchedStores);
+    } catch (err: any) {
+      // Handle DetailedError from storeService or fallback to simple message
+      if (err && typeof err === 'object' && 'message' in err) {
+        setError(err as DetailedError);
+      } else {
+        setError({ message: 'Failed to fetch stores in the selected city. Please try again.' });
+      }
+      console.error('Error fetching stores:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="App">
       <header className="App-header">
@@ -144,6 +208,24 @@ const App: React.FC = () => {
       <main className="App-main">
         <div className="search-controls">
           <h2>Search Parameters</h2>
+
+          {/* Famous Cities Section */}
+          <div className="cities-section">
+            <h3>🏙️ Quick Select - Famous Cities</h3>
+            <div className="cities-grid">
+              {famousCities.map((city) => (
+                <button
+                  key={`${city.name}-${city.country}`}
+                  className="city-button"
+                  onClick={() => setLocationToCity(city)}
+                  disabled={loading}
+                >
+                  {city.flag} {city.name}
+                  <small>{city.country}</small>
+                </button>
+              ))}
+            </div>
+          </div>
 
           <div className="control-group">
             <label>
@@ -214,7 +296,21 @@ const App: React.FC = () => {
 
         {error && (
           <div className="error-message">
-            ⚠️ {error}
+            <div className="error-main">
+              ⚠️ {error.message}
+            </div>
+            {error.validationErrors && Object.keys(error.validationErrors).length > 0 && (
+              <div className="validation-errors">
+                <h4>Validation Errors:</h4>
+                <ul>
+                  {Object.entries(error.validationErrors).map(([field, message]) => (
+                    <li key={field}>
+                      <strong>{field}:</strong> {message}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
         )}
 
