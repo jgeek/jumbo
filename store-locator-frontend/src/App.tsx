@@ -244,7 +244,7 @@ const App: React.FC = () => {
   };
 
   // Handle map drag to update coordinates and search
-  const handleMapDrag = async (lat: number, lng: number, radius?: number) => {
+  const handleMapDrag = async (lat: number, lng: number, radius?: number, limitChange?: number) => {
     // Update input coordinates to reflect new map center
     setInputCoords({
       latitude: lat,
@@ -257,6 +257,12 @@ const App: React.FC = () => {
     // Clear user location since we're now looking at a different location
     setUserLocation(null);
 
+    // Calculate new limit based on zoom change
+    let newLimit = searchParams.limit;
+    if (limitChange !== undefined && limitChange !== 0) {
+      newLimit = Math.max(1, Math.min(50, searchParams.limit + limitChange)); // Keep within bounds 1-50
+    }
+
     // Automatically search for stores at the new location
     setLoading(true);
     setError(null);
@@ -265,7 +271,8 @@ const App: React.FC = () => {
       ...searchParams,
       latitude: lat,
       longitude: lng,
-      maxRadius: radius || searchParams.maxRadius // Use calculated radius or keep current
+      maxRadius: radius || searchParams.maxRadius, // Use calculated radius or keep current
+      limit: newLimit // Use adjusted limit
     };
 
     try {
