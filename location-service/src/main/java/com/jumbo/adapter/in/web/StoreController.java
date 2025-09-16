@@ -74,13 +74,13 @@ public class StoreController {
             @RequestParam(name = "onlyOpen", defaultValue = "false")
             boolean onlyOpen
     ) {
-        log.info("Finding nearby stores for coordinates: lat={}, lon={}, limit={}, onlyOpen={}",
-                latitude, longitude, limit, onlyOpen);
+        log.debug("Finding nearby stores for coordinates: lat={}, lon={}, limit={}, onlyOpen={}, maxRadius={}",
+                latitude, longitude, limit, onlyOpen, maxRadius);
 
         NearByRequest request = new NearByRequest(latitude, longitude, maxRadius, limit, onlyOpen);
         List<Store> stores = nearByService.findNearByStores(request, LocalTime.now());
 
-        log.info("Found {} nearby stores", stores.size());
+        log.debug("Found {} nearby stores", stores.size());
         return ResponseEntity.ok(stores);
     }
 }
