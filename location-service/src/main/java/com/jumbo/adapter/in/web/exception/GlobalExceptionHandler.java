@@ -34,6 +34,10 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         Map<String, String> errors = new HashMap<>();
         for (ConstraintViolation<?> violation : ex.getConstraintViolations()) {
             String fieldName = violation.getPropertyPath().toString();
+            int dot = fieldName.indexOf('.');
+            if (dot >= 0) {
+                fieldName = fieldName.substring(dot + 1); // drop leading method name
+            }
             String errorMessage = violation.getMessage();
             errors.put(fieldName, errorMessage);
         }
