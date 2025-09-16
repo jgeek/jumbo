@@ -244,7 +244,7 @@ const App: React.FC = () => {
   };
 
   // Handle map drag to update coordinates and search
-  const handleMapDrag = async (lat: number, lng: number) => {
+  const handleMapDrag = async (lat: number, lng: number, radius?: number) => {
     // Update input coordinates to reflect new map center
     setInputCoords({
       latitude: lat,
@@ -264,7 +264,8 @@ const App: React.FC = () => {
     const dragSearchParams = {
       ...searchParams,
       latitude: lat,
-      longitude: lng
+      longitude: lng,
+      maxRadius: radius || searchParams.maxRadius // Use calculated radius or keep current
     };
 
     try {

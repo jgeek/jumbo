@@ -16,7 +16,7 @@ interface StoreMapProps {
   stores: Store[];
   center: [number, number];
   userLocation?: [number, number] | null;
-  onMapDrag?: (lat: number, lng: number) => void;
+  onMapDrag?: (lat: number, lng: number, radius?: number, limitChange?: number) => void;
 }
 
 // Component to handle map center updates
@@ -30,13 +30,89 @@ const MapCenterUpdater: React.FC<{ center: [number, number] }> = ({ center }) =>
   return null;
 };
 
-// Component to handle map drag events
-const MapDragHandler: React.FC<{ onMapDrag?: (lat: number, lng: number) => void }> = ({ onMapDrag }) => {
+// Component to handle map drag and zoom events
+const MapDragHandler: React.FC<{ onMapDrag?: (lat: number, lng: number, radius?: number, limitChange?: number) => void }> = ({ onMapDrag }) => {
+  const map = useMap();
+
+  // Track previous zoom level to detect zoom direction
+  const [prevZoom, setPrevZoom] = React.useState<number>(map.getZoom());
+
+  // Function to calculate radius based on zoom level
+  const calculateRadiusFromZoom = (zoom: number): number => {
+    // Zoom level to radius mapping (approximate km coverage)
+    // Higher zoom = smaller area = smaller radius
+    // Lower zoom = larger area = larger radius
+    const zoomToRadius: { [key: number]: number } = {
+      18: 0.5,   // Very close zoom
+      17: 1,     // Street level
+      16: 2,     // Neighborhood
+      15: 3,     // Local area
+      14: 5,     // District
+      13: 8,     // City area (default)
+      12: 12,    // Large city area
+      11: 18,    // Metropolitan area
+      10: 25,    // Regional view
+      9: 35,     // Large region
+      8: 50,     // Province/state level
+      7: 75,     // Multi-province
+      6: 100     // Country level (max)
+    };
+
+    // Find the closest zoom level or interpolate
+    if (zoomToRadius[zoom]) {
+      return zoomToRadius[zoom];
+    }
+
+    // If exact zoom not found, interpolate between closest values
+    const zoomLevels = Object.keys(zoomToRadius).map(Number).sort((a, b) => b - a);
+
+    for (let i = 0; i < zoomLevels.length - 1; i++) {
+      const upperZoom = zoomLevels[i];
+      const lowerZoom = zoomLevels[i + 1];
+
+      if (zoom <= upperZoom && zoom >= lowerZoom) {
+        const upperRadius = zoomToRadius[upperZoom];
+        const lowerRadius = zoomToRadius[lowerZoom];
+        const ratio = (zoom - lowerZoom) / (upperZoom - lowerZoom);
+        return Math.round(lowerRadius + (upperRadius - lowerRadius) * ratio);
+      }
+    }
+
+    // Fallback: if zoom is outside our range
+    if (zoom > 18) return 0.5;  // Very close zoom
+    if (zoom < 6) return 100;   // Very far zoom
+    return 8; // Default fallback
+  };
+
   useMapEvents({
     dragend: (e) => {
       if (onMapDrag) {
         const center = e.target.getCenter();
-        onMapDrag(center.lat, center.lng);
+        const zoom = e.target.getZoom();
+        const radius = calculateRadiusFromZoom(zoom);
+        onMapDrag(center.lat, center.lng, radius);
+      }
+    },
+    zoomend: (e) => {
+      if (onMapDrag) {
+        const center = e.target.getCenter();
+        const currentZoom = e.target.getZoom();
+        const radius = calculateRadiusFromZoom(currentZoom);
+
+        // Calculate limit change based on zoom direction
+        let limitChange = 0;
+        if (currentZoom < prevZoom) {
+          // Zooming out - increase limit by 10
+          limitChange = 10;
+        } else if (currentZoom > prevZoom) {
+          // Zooming in - decrease limit by 10
+          limitChange = -10;
+        }
+
+        // Update previous zoom level
+        setPrevZoom(currentZoom);
+
+        onMapDrag(center.lat, center.lng, radius, limitChange);
       }
     },
   });
