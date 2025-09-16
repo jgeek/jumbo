@@ -1,5 +1,5 @@
-import React from 'react';
-import { MapContainer, TileLayer, Marker, Popup, Tooltip } from 'react-leaflet';
+import React, { useEffect } from 'react';
+import { MapContainer, TileLayer, Marker, Popup, Tooltip, useMap } from 'react-leaflet';
 import { Store } from './types';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -18,15 +18,83 @@ interface StoreMapProps {
   userLocation?: [number, number] | null;
 }
 
+// Component to handle map center updates
+const MapCenterUpdater: React.FC<{ center: [number, number] }> = ({ center }) => {
+  const map = useMap();
+
+  useEffect(() => {
+    map.setView(center, map.getZoom());
+  }, [center, map]);
+
+  return null;
+};
+
 const StoreMap: React.FC<StoreMapProps> = ({ stores, center, userLocation }) => {
-  // Custom icon for user location
-  const userIcon = new L.Icon({
-    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
-    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-    iconSize: [25, 41],
-    iconAnchor: [12, 41],
-    popupAnchor: [1, -34],
-    shadowSize: [41, 41]
+  // Custom icon for user location - more distinctive
+  const userIcon = L.divIcon({
+    html: `
+      <div style="
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        font-family: Arial, sans-serif;
+      ">
+        <div style="
+          background-color: #2196F3;
+          color: white;
+          padding: 4px 8px;
+          border-radius: 4px;
+          font-size: 11px;
+          font-weight: bold;
+          white-space: nowrap;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+          margin-bottom: 2px;
+        ">
+          📍 Your Location
+        </div>
+        <div style="
+          width: 0;
+          height: 0;
+          border-left: 6px solid transparent;
+          border-right: 6px solid transparent;
+          border-top: 8px solid #2196F3;
+          margin-top: -2px;
+        "></div>
+        <div style="
+          width: 20px;
+          height: 20px;
+          background: radial-gradient(circle, #2196F3 0%, #1976D2 100%);
+          border: 4px solid white;
+          border-radius: 50%;
+          box-shadow: 0 3px 6px rgba(0,0,0,0.4);
+          margin-top: -4px;
+          position: relative;
+        ">
+          <div style="
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 8px;
+            height: 8px;
+            background-color: white;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+          "></div>
+        </div>
+      </div>
+      <style>
+        @keyframes pulse {
+          0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+          50% { transform: translate(-50%, -50%) scale(1.5); opacity: 0.7; }
+          100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        }
+      </style>
+    `,
+    className: 'custom-user-location-icon',
+    iconSize: [120, 60],
+    iconAnchor: [60, 50],
+    popupAnchor: [0, -50]
   });
 
   // Custom icon for stores
@@ -101,6 +169,9 @@ const StoreMap: React.FC<StoreMapProps> = ({ stores, center, userLocation }) => 
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
+
+      {/* Component to update map center when coordinates change */}
+      <MapCenterUpdater center={center} />
 
       {/* User location marker */}
       {userLocation && (

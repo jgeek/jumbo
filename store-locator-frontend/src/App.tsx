@@ -9,8 +9,17 @@ const App: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
-  const [searchParams, setSearchParams] = useState({
+
+  // Separate input coordinates from map center coordinates
+  const [inputCoords, setInputCoords] = useState({
     latitude: 52.3702, // Default to Amsterdam
+    longitude: 4.8952,
+  });
+
+  const [mapCenter, setMapCenter] = useState<[number, number]>([52.3702, 4.8952]);
+
+  const [searchParams, setSearchParams] = useState({
+    latitude: 52.3702,
     longitude: 4.8952,
     maxRadius: 5.0,
     limit: 10,
@@ -26,6 +35,11 @@ const App: React.FC = () => {
           const lat = position.coords.latitude;
           const lng = position.coords.longitude;
           setUserLocation([lat, lng]);
+          setInputCoords({
+            latitude: lat,
+            longitude: lng
+          });
+          setMapCenter([lat, lng]);
           setSearchParams(prev => ({
             ...prev,
             latitude: lat,
@@ -45,13 +59,25 @@ const App: React.FC = () => {
     }
   };
 
-  // Fetch nearby stores
+  // Fetch nearby stores and update map center
   const fetchStores = async () => {
     setLoading(true);
     setError(null);
+
+    // Update search params with current input coordinates
+    const currentSearchParams = {
+      ...searchParams,
+      latitude: inputCoords.latitude,
+      longitude: inputCoords.longitude
+    };
+
+    // Update map center to the search location
+    setMapCenter([inputCoords.latitude, inputCoords.longitude]);
+
     try {
-      const fetchedStores = await storeService.getClosestStores(searchParams);
+      const fetchedStores = await storeService.getClosestStores(currentSearchParams);
       setStores(fetchedStores);
+      setSearchParams(currentSearchParams);
     } catch (err) {
       setError('Failed to fetch nearby stores. Please try again.');
       console.error('Error fetching stores:', err);
@@ -65,7 +91,15 @@ const App: React.FC = () => {
     fetchStores();
   }, []);
 
-  // Update search parameters
+  // Update input coordinates (doesn't trigger map center change)
+  const handleCoordChange = (key: 'latitude' | 'longitude', value: number) => {
+    setInputCoords(prev => ({
+      ...prev,
+      [key]: value
+    }));
+  };
+
+  // Update other search parameters
   const handleSearchParamChange = (key: string, value: number | boolean) => {
     setSearchParams(prev => ({
       ...prev,
@@ -90,8 +124,8 @@ const App: React.FC = () => {
               <input
                 type="number"
                 step="0.0001"
-                value={searchParams.latitude}
-                onChange={(e) => handleSearchParamChange('latitude', parseFloat(e.target.value))}
+                value={inputCoords.latitude}
+                onChange={(e) => handleCoordChange('latitude', parseFloat(e.target.value))}
               />
             </label>
 
@@ -100,8 +134,8 @@ const App: React.FC = () => {
               <input
                 type="number"
                 step="0.0001"
-                value={searchParams.longitude}
-                onChange={(e) => handleSearchParamChange('longitude', parseFloat(e.target.value))}
+                value={inputCoords.longitude}
+                onChange={(e) => handleCoordChange('longitude', parseFloat(e.target.value))}
               />
             </label>
           </div>
@@ -169,7 +203,7 @@ const App: React.FC = () => {
           <div className="map-container">
             <StoreMap
               stores={stores}
-              center={[searchParams.latitude, searchParams.longitude]}
+              center={mapCenter}
               userLocation={userLocation}
             />
           </div>
