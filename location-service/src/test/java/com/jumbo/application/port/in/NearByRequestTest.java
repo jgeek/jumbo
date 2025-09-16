@@ -1,6 +1,5 @@
-package com.jumbo.application.domain.service;
+package com.jumbo.application.port.in;
 
-import com.jumbo.application.port.in.NearByRequest;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;

@@ -10,8 +10,7 @@ import org.locationtech.jts.index.quadtree.Quadtree;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalTime;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -43,7 +42,8 @@ public class QuadTreeNearByService implements NearByUseCase {
     public List<Store> findNearByStores(NearByRequest req, LocalTime now) {
         double searchRadiusKm = 1.0; // start with 1 km
 
-        while (searchRadiusKm <= req.maxRadiusKm()) {
+        Set<Store> stores = new HashSet<>();
+        while (true) {
             Envelope env = makeEnvelope(req.latitude(), req.longitude(), searchRadiusKm);
             @SuppressWarnings("unchecked")
             List<Store> found = quadtree.query(env);
@@ -51,12 +51,14 @@ public class QuadTreeNearByService implements NearByUseCase {
             List<Store> filtered = found.stream()
                     .filter(s -> !req.onlyOpen() || s.isOpen(now))
                     .toList();
+            stores.addAll(filtered);
 
-            if (filtered.size() >= req.limit() || searchRadiusKm == req.maxRadiusKm()) {
-                return filtered.stream()
+            if (stores.size() >= req.limit() || searchRadiusKm >= req.maxRadiusKm()) {
+                return stores.stream()
                         .peek(store -> store.setDistance(distanceCalculator.distanceInKm(
                                 req.latitude(), req.longitude(),
                                 store.getLatitude(), store.getLongitude())))
+                        .peek(s -> System.out.println("Store " + s.getUuid() + " is " + s.getDistance() + " km away"))
                         .filter(s -> s.getDistance() <= req.maxRadiusKm())
                         .sorted(Comparator.comparingDouble(Store::getDistance))
                         .limit(req.limit())
@@ -64,7 +66,6 @@ public class QuadTreeNearByService implements NearByUseCase {
             }
             searchRadiusKm *= 2; // expand search area
         }
-        return List.of();
     }
 
     /*

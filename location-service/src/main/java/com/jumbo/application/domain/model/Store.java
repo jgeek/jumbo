@@ -4,10 +4,11 @@ package com.jumbo.application.domain.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
 
 import java.time.LocalTime;
 
@@ -92,7 +93,6 @@ public class Store {
         }
     }
 
-
     @JsonIgnore
     public boolean isOpen() {
         return isOpen(LocalTime.now());
@@ -119,9 +119,7 @@ public class Store {
             then `!currentTime.isAfter(todayClose)` is `true` (02:00 is not after 03:00),
             so the store is open.
 
-            If `currentTime = 10:00`,
-            both conditions are `false`,
-            so the store is closed.*/
+            If `currentTime = 10:00`,both conditions are `false`, so the store is closed.*/
             return !currentTime.isBefore(todayOpen) || !currentTime.isAfter(todayClose);
         } else {
             return !currentTime.isBefore(todayOpen) && !currentTime.isAfter(todayClose);
