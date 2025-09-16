@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, Tooltip, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, Tooltip, useMap, useMapEvents } from 'react-leaflet';
 import { Store } from './types';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -16,6 +16,7 @@ interface StoreMapProps {
   stores: Store[];
   center: [number, number];
   userLocation?: [number, number] | null;
+  onMapDrag?: (lat: number, lng: number) => void;
 }
 
 // Component to handle map center updates
@@ -29,7 +30,21 @@ const MapCenterUpdater: React.FC<{ center: [number, number] }> = ({ center }) =>
   return null;
 };
 
-const StoreMap: React.FC<StoreMapProps> = ({ stores, center, userLocation }) => {
+// Component to handle map drag events
+const MapDragHandler: React.FC<{ onMapDrag?: (lat: number, lng: number) => void }> = ({ onMapDrag }) => {
+  useMapEvents({
+    dragend: (e) => {
+      if (onMapDrag) {
+        const center = e.target.getCenter();
+        onMapDrag(center.lat, center.lng);
+      }
+    },
+  });
+
+  return null;
+};
+
+const StoreMap: React.FC<StoreMapProps> = ({ stores, center, userLocation, onMapDrag }) => {
   // Custom icon for user location - more distinctive
   const userIcon = L.divIcon({
     html: `
@@ -172,6 +187,7 @@ const StoreMap: React.FC<StoreMapProps> = ({ stores, center, userLocation }) => 
 
       {/* Component to update map center when coordinates change */}
       <MapCenterUpdater center={center} />
+      <MapDragHandler onMapDrag={onMapDrag} />
 
       {/* User location marker */}
       {userLocation && (

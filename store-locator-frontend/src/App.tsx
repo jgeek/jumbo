@@ -26,6 +26,28 @@ const App: React.FC = () => {
     onlyOpen: false
   });
 
+  // Helper function to get field-specific validation error
+  const getFieldError = (fieldName: string): string | undefined => {
+    if (!error?.validationErrors) return undefined;
+
+    // Check for exact match first
+    if (error.validationErrors[fieldName]) {
+      return error.validationErrors[fieldName];
+    }
+
+    // Check for field names that end with the parameter name (e.g., "getClosestStores.limit" -> "limit")
+    const matchingKey = Object.keys(error.validationErrors).find(key =>
+      key.includes(fieldName) || key.endsWith('.' + fieldName)
+    );
+
+    return matchingKey ? error.validationErrors[matchingKey] : undefined;
+  };
+
+  // Check if a field has validation error
+  const hasFieldError = (fieldName: string): boolean => {
+    return !!getFieldError(fieldName);
+  };
+
   // Famous cities in Netherlands
   const famousCities = [
     // Netherlands
@@ -198,6 +220,47 @@ const App: React.FC = () => {
     }
   };
 
+  // Handle map drag to update coordinates and search
+  const handleMapDrag = async (lat: number, lng: number) => {
+    // Update input coordinates to reflect new map center
+    setInputCoords({
+      latitude: lat,
+      longitude: lng
+    });
+
+    // Update map center
+    setMapCenter([lat, lng]);
+
+    // Clear user location since we're now looking at a different location
+    setUserLocation(null);
+
+    // Automatically search for stores at the new location
+    setLoading(true);
+    setError(null);
+
+    const dragSearchParams = {
+      ...searchParams,
+      latitude: lat,
+      longitude: lng
+    };
+
+    try {
+      const fetchedStores = await storeService.getClosestStores(dragSearchParams);
+      setStores(fetchedStores);
+      setSearchParams(dragSearchParams);
+    } catch (err: any) {
+      // Handle DetailedError from storeService or fallback to simple message
+      if (err && typeof err === 'object' && 'message' in err) {
+        setError(err as DetailedError);
+      } else {
+        setError({ message: 'Failed to fetch nearby stores. Please try again.' });
+      }
+      console.error('Error fetching stores:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="App">
       <header className="App-header">
@@ -228,49 +291,81 @@ const App: React.FC = () => {
           </div>
 
           <div className="control-group">
-            <label>
-              Latitude:
-              <input
-                type="number"
-                step="0.0001"
-                value={inputCoords.latitude}
-                onChange={(e) => handleCoordChange('latitude', parseFloat(e.target.value))}
-              />
-            </label>
+            <div className="input-field">
+              <label>
+                Latitude:
+                <input
+                  type="number"
+                  step="0.0001"
+                  value={inputCoords.latitude}
+                  onChange={(e) => handleCoordChange('latitude', parseFloat(e.target.value))}
+                  className={hasFieldError('latitude') ? 'input-error' : ''}
+                />
+              </label>
+              {hasFieldError('latitude') && (
+                <div className="field-error-message">
+                  {getFieldError('latitude')}
+                </div>
+              )}
+            </div>
 
-            <label>
-              Longitude:
-              <input
-                type="number"
-                step="0.0001"
-                value={inputCoords.longitude}
-                onChange={(e) => handleCoordChange('longitude', parseFloat(e.target.value))}
-              />
-            </label>
+            <div className="input-field">
+              <label>
+                Longitude:
+                <input
+                  type="number"
+                  step="0.0001"
+                  value={inputCoords.longitude}
+                  onChange={(e) => handleCoordChange('longitude', parseFloat(e.target.value))}
+                  className={hasFieldError('longitude') ? 'input-error' : ''}
+                />
+              </label>
+              {hasFieldError('longitude') && (
+                <div className="field-error-message">
+                  {getFieldError('longitude')}
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="control-group">
-            <label>
-              Max Radius (km):
-              <input
-                type="number"
-                min="1"
-                max="100"
-                value={searchParams.maxRadius}
-                onChange={(e) => handleSearchParamChange('maxRadius', parseFloat(e.target.value))}
-              />
-            </label>
+            <div className="input-field">
+              <label>
+                Max Radius (km):
+                <input
+                  type="number"
+                  min="1"
+                  max="100"
+                  value={searchParams.maxRadius}
+                  onChange={(e) => handleSearchParamChange('maxRadius', parseFloat(e.target.value))}
+                  className={hasFieldError('maxRadius') ? 'input-error' : ''}
+                />
+              </label>
+              {hasFieldError('maxRadius') && (
+                <div className="field-error-message">
+                  {getFieldError('maxRadius')}
+                </div>
+              )}
+            </div>
 
-            <label>
-              Max Results:
-              <input
-                type="number"
-                min="1"
-                max="50"
-                value={searchParams.limit}
-                onChange={(e) => handleSearchParamChange('limit', parseInt(e.target.value))}
-              />
-            </label>
+            <div className="input-field">
+              <label>
+                Max Results:
+                <input
+                  type="number"
+                  min="1"
+                  max="50"
+                  value={searchParams.limit}
+                  onChange={(e) => handleSearchParamChange('limit', parseInt(e.target.value))}
+                  className={hasFieldError('limit') ? 'input-error' : ''}
+                />
+              </label>
+              {hasFieldError('limit') && (
+                <div className="field-error-message">
+                  {getFieldError('limit')}
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="control-group">
@@ -295,23 +390,37 @@ const App: React.FC = () => {
         </div>
 
         {error && (
-          <div className="error-message">
-            <div className="error-main">
-              ⚠️ {error.message}
-            </div>
-            {error.validationErrors && Object.keys(error.validationErrors).length > 0 && (
-              <div className="validation-errors">
-                <h4>Validation Errors:</h4>
-                <ul>
-                  {Object.entries(error.validationErrors).map(([field, message]) => (
-                    <li key={field}>
-                      <strong>{field}:</strong> {message}
-                    </li>
-                  ))}
-                </ul>
+          <>
+            {/* Only show general error message if there are no field-specific validation errors */}
+            {(!error.validationErrors || Object.keys(error.validationErrors).length === 0) && (
+              <div className="error-message">
+                <div className="error-main">
+                  ⚠️ {error.message}
+                </div>
               </div>
             )}
-          </div>
+
+            {/* Show validation errors that are not field-specific */}
+            {error.validationErrors && Object.keys(error.validationErrors).length > 0 &&
+             !Object.keys(error.validationErrors).some(key =>
+               ['latitude', 'longitude', 'maxRadius', 'limit'].some(field =>
+                 key.includes(field) || key.endsWith('.' + field)
+               )
+             ) && (
+              <div className="error-message">
+                <div className="validation-errors">
+                  <h4>Validation Errors:</h4>
+                  <ul>
+                    {Object.entries(error.validationErrors).map(([field, message]) => (
+                      <li key={field}>
+                        <strong>{field}:</strong> {message}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            )}
+          </>
         )}
 
         {loading && (
@@ -328,6 +437,7 @@ const App: React.FC = () => {
               stores={stores}
               center={mapCenter}
               userLocation={userLocation}
+              onMapDrag={handleMapDrag}
             />
           </div>
 
