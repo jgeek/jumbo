@@ -9,14 +9,13 @@ import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
 import java.util.List;
 
-//The mapper is configured as a Spring component (componentModel = "spring") so it can be injected as a dependency
 @Mapper(componentModel = "spring")
 public interface StoreMapper {
 
     @Mapping(target = "todayOpen", source = "todayOpen", qualifiedByName = "stringToLocalTime")
     @Mapping(target = "todayClose", source = "todayClose", qualifiedByName = "stringToLocalTime")
+    // distance is calculated separately, not mapped from entity
     @Mapping(target = "distance", ignore = true)
-        // distance is calculated separately, not mapped from entity
     Store toDomain(StoreEntity entity);
 
     List<Store> toDomainList(List<StoreEntity> entities);

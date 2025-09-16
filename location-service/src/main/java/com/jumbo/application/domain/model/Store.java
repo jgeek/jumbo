@@ -72,17 +72,32 @@ public class Store {
 
     @JsonIgnore
     public boolean isOpen() {
+        return isOpen(LocalTime.now());
+    }
+
+    @JsonIgnore
+    public boolean isOpen(LocalTime currentTime) {
         if (todayOpen == null || todayClose == null) {
             return false; // Cannot determine, assume closed
         }
 
-        LocalTime now = LocalTime.now();
-
         // Handle stores that close after midnight
         if (todayClose.isBefore(todayOpen)) {
-            return !now.isBefore(todayOpen) || !now.isAfter(todayClose);
+           /*
+            If `todayOpen = 22:00` and `todayClose = 03:00` (store open overnight), and `currentTime = 23:00`,
+            then `!currentTime.isBefore(todayOpen)` is `true` (23:00 is not before 22:00),
+            so the store is open.
+
+            If `currentTime = 02:00`,
+            then `!currentTime.isAfter(todayClose)` is `true` (02:00 is not after 03:00),
+            so the store is open.
+
+            If `currentTime = 10:00`,
+            both conditions are `false`,
+            so the store is closed.*/
+            return !currentTime.isBefore(todayOpen) || !currentTime.isAfter(todayClose);
         } else {
-            return !now.isBefore(todayOpen) && !now.isAfter(todayClose);
+            return !currentTime.isBefore(todayOpen) && !currentTime.isAfter(todayClose);
         }
     }
 }
