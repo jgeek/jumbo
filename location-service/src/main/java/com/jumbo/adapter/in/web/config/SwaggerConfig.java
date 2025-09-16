@@ -1,4 +1,4 @@
-package com.jumbo.config;
+package com.jumbo.adapter.in.web.config;
 
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;

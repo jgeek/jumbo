@@ -41,19 +41,6 @@ server:
     include-binding-errors: always
     include-stacktrace: on_param
 
-# Logging configuration
-logging:
-  level:
-    com.jumbo: INFO
-    org.springframework.web: WARN
-    org.springframework.security: WARN
-    org.springframework.boot.autoconfigure: WARN
-  pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
-    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
-  file:
-    name: logs/jumbo-location-service.log
-
 # Management and monitoring
 management:
   endpoints:

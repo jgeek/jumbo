@@ -14,8 +14,6 @@ public interface StoreMapper {
 
     @Mapping(target = "todayOpen", source = "todayOpen", qualifiedByName = "stringToLocalTime")
     @Mapping(target = "todayClose", source = "todayClose", qualifiedByName = "stringToLocalTime")
-    // maxRadiusKm is calculated separately, not mapped from entity
-    @Mapping(target = "maxRadiusKm", ignore = true)
     Store toDomain(StoreEntity entity);
 
     List<Store> toDomainList(List<StoreEntity> entities);

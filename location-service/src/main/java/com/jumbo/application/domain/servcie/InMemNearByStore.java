@@ -37,7 +37,6 @@ public class InMemNearByStore implements NearByUseCase {
                         req.latitude(), req.longitude(),
                         store.getLatitude(), store.getLongitude())))
                 .sorted(Comparator.comparingDouble(Store::getDistance))
-                .peek(s -> System.out.println("Store " + s.getUuid() + " is " + s.getDistance() + " km away"))
                 .filter(s -> s.getDistance() <= req.maxRadiusKm())
                 .limit(req.limit())
                 .collect(Collectors.toList());

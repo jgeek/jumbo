@@ -58,7 +58,6 @@ public class QuadTreeNearByService implements NearByUseCase {
                         .peek(store -> store.setDistance(distanceCalculator.distanceInKm(
                                 req.latitude(), req.longitude(),
                                 store.getLatitude(), store.getLongitude())))
-                        .peek(s -> System.out.println("Store " + s.getUuid() + " is " + s.getDistance() + " km away"))
                         .filter(s -> s.getDistance() <= req.maxRadiusKm())
                         .sorted(Comparator.comparingDouble(Store::getDistance))
                         .limit(req.limit())

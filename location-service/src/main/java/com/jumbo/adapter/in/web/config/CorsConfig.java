@@ -1,4 +1,4 @@
-package com.jumbo.config;
+package com.jumbo.adapter.in.web.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
