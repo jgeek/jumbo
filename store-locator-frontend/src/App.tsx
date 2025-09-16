@@ -75,55 +75,78 @@ const App: React.FC = () => {
       return;
     }
 
-    // Enhanced geolocation options
+    // Enhanced geolocation options - Chrome-friendly settings
     const options = {
-      enableHighAccuracy: true,
-      timeout: 10000, // 10 seconds timeout
-      maximumAge: 300000 // Accept cached position up to 5 minutes old
+      enableHighAccuracy: false, // Chrome often fails with high accuracy
+      timeout: 15000, // Increased timeout for Chrome
+      maximumAge: 600000 // Accept cached position up to 10 minutes old
     };
 
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const lat = position.coords.latitude;
-        const lng = position.coords.longitude;
-        setUserLocation([lat, lng]);
-        setInputCoords({
-          latitude: lat,
-          longitude: lng
-        });
-        setMapCenter([lat, lng]);
-        setSearchParams(prev => ({
-          ...prev,
-          latitude: lat,
-          longitude: lng
-        }));
-        setLoading(false);
-        setError(null);
-        console.log('Location found:', { lat, lng, accuracy: position.coords.accuracy });
-      },
-      (error) => {
-        console.error('Geolocation error:', error);
-        setLoading(false);
+    // Try high accuracy first, fallback to low accuracy for Chrome
+    const tryGeolocation = (highAccuracy: boolean) => {
+      const currentOptions = {
+        ...options,
+        enableHighAccuracy: highAccuracy
+      };
 
-        let errorMessage = '';
-        switch(error.code) {
-          case error.PERMISSION_DENIED:
-            errorMessage = 'Location access denied. Please allow location access in your browser settings and try again.';
-            break;
-          case error.POSITION_UNAVAILABLE:
-            errorMessage = 'Location information is unavailable. This might be due to poor GPS signal or network issues. Using default location (Amsterdam).';
-            break;
-          case error.TIMEOUT:
-            errorMessage = 'Location request timed out. Please try again or check your GPS/network connection.';
-            break;
-          default:
-            errorMessage = 'An unknown error occurred while retrieving location. Using default location (Amsterdam).';
-            break;
-        }
-        setError({ message: errorMessage });
-      },
-      options
-    );
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const lat = position.coords.latitude;
+          const lng = position.coords.longitude;
+          setUserLocation([lat, lng]);
+          setInputCoords({
+            latitude: lat,
+            longitude: lng
+          });
+          setMapCenter([lat, lng]);
+          setSearchParams(prev => ({
+            ...prev,
+            latitude: lat,
+            longitude: lng
+          }));
+          setLoading(false);
+          setError(null);
+          console.log('Location found:', { lat, lng, accuracy: position.coords.accuracy });
+        },
+        (error) => {
+          console.error('Geolocation error:', error);
+
+          // If high accuracy failed and we haven't tried low accuracy yet, try again
+          if (highAccuracy && (error.code === error.POSITION_UNAVAILABLE || error.code === error.TIMEOUT)) {
+            console.log('High accuracy failed, trying low accuracy...');
+            tryGeolocation(false);
+            return;
+          }
+
+          setLoading(false);
+
+          let errorMessage = '';
+          switch(error.code) {
+            case error.PERMISSION_DENIED:
+              errorMessage = 'Location access denied. Please allow location access in your browser settings and try again.';
+              break;
+            case error.POSITION_UNAVAILABLE:
+              errorMessage = `Location information is unavailable. ${
+                navigator.userAgent.includes('Chrome') 
+                  ? 'Chrome requires HTTPS for location services. Try using Firefox or access via HTTPS.' 
+                  : 'This might be due to poor GPS signal or network issues.'
+              } Using default location (Amsterdam).`;
+              break;
+            case error.TIMEOUT:
+              errorMessage = 'Location request timed out. Please try again or check your GPS/network connection.';
+              break;
+            default:
+              errorMessage = 'An unknown error occurred while retrieving location. Using default location (Amsterdam).';
+              break;
+          }
+          setError({ message: errorMessage });
+        },
+        currentOptions
+      );
+    };
+
+    // Start with high accuracy, will fallback to low accuracy if needed
+    tryGeolocation(true);
   };
 
   // Fetch nearby stores and update map center
@@ -275,7 +298,9 @@ const App: React.FC = () => {
           {/* Famous Cities Section */}
           <div className="cities-section">
             <h3>🏙️ Quick Select - Famous Cities</h3>
-            <div className="cities-grid">
+
+            {/* Desktop grid view */}
+            <div className="cities-grid desktop-only">
               {famousCities.map((city) => (
                 <button
                   key={`${city.name}-${city.country}`}
@@ -287,6 +312,30 @@ const App: React.FC = () => {
                   <small>{city.country}</small>
                 </button>
               ))}
+            </div>
+
+            {/* Mobile dropdown view */}
+            <div className="cities-dropdown mobile-only">
+              <select
+                className="city-select"
+                onChange={(e) => {
+                  const selectedIndex = parseInt(e.target.value);
+                  if (selectedIndex >= 0) {
+                    setLocationToCity(famousCities[selectedIndex]);
+                  }
+                }}
+                disabled={loading}
+                defaultValue=""
+              >
+                <option value="" disabled>
+                  Choose a city...
+                </option>
+                {famousCities.map((city, index) => (
+                  <option key={`${city.name}-${city.country}`} value={index}>
+                    {city.flag} {city.name} ({city.country})
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
 
