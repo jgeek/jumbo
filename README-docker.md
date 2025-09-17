@@ -30,7 +30,7 @@ docker-compose logs -f store-locator-frontend
 ## Access the Application
 
 - **Frontend**: http://localhost:3000
-- **Backend API**: http://localhost:8080/api/v1
+- **Backend Swagger**: http://localhost:8080/swagger-ui/index.html
 - **API Health Check**: http://localhost:8080/api/v1/health
 
 ## Configuration
