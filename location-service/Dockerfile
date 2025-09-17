@@ -1,15 +1,21 @@
 # Multi-stage Docker build for optimal image size
-FROM maven:3.9-eclipse-temurin-17 AS builder
+FROM maven:3.9-eclipse-temurin-23 AS builder
 
 WORKDIR /app
-COPY pom.xml .
-COPY src ./src
 
-# Build the application
+# Copy parent POM first
+COPY pom.xml ./pom.xml
+
+# Copy location-service module
+COPY location-service/pom.xml ./location-service/pom.xml
+COPY location-service/src ./location-service/src
+
+# Build the application from the location-service module
+WORKDIR /app/location-service
 RUN mvn clean package -DskipTests
 
 # Production image
-FROM eclipse-temurin:17-jre-alpine
+FROM eclipse-temurin:23-jre-alpine
 
 # Create non-root user for security
 RUN addgroup -g 1001 jumbo && \
@@ -18,7 +24,7 @@ RUN addgroup -g 1001 jumbo && \
 WORKDIR /app
 
 # Copy the built JAR
-COPY --from=builder /app/target/location-service-*.jar app.jar
+COPY --from=builder /app/location-service/target/location-service-*.jar app.jar
 
 # Create logs directory
 RUN mkdir -p logs && chown -R jumbo:jumbo /app
