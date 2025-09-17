@@ -320,8 +320,6 @@ const App: React.FC = () => {
 
       <main className="App-main">
         <div className="search-controls">
-          <h2>Search Parameters</h2>
-
           {/* Famous Cities Section */}
           <div className="cities-section">
             <h3>🏙️ Quick Select - Famous Cities</h3>

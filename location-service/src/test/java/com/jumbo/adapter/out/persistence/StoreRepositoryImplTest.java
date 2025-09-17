@@ -6,14 +6,20 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.quality.Strictness;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -21,12 +27,29 @@ class StoreRepositoryImplTest {
 
     @Mock
     private StoreMapper storeMapper;
+    @Mock
+    private ResourceLoader resourceLoader;
+    @Mock
+    private Resource resource;
 
     private StoreRepositoryImpl storeRepository;
 
     @BeforeEach
-    void setUp() {
-        storeRepository = new StoreRepositoryImpl(storeMapper);
+    void setUp() throws IOException {
+        storeRepository = new StoreRepositoryImpl(storeMapper, resourceLoader, "classpath:stores.json");
+        String mockJson = """
+                {
+                    "stores": [
+                        {
+                            "uuid": "1",
+                            "city": "Amsterdam"
+                        }
+                    ]
+                }
+                """;
+        InputStream mockInputStream = new ByteArrayInputStream(mockJson.getBytes());
+        lenient().when(resource.getInputStream()).thenReturn(mockInputStream);
+        lenient().when(resourceLoader.getResource(anyString())).thenReturn(resource);
     }
 
     @Test
@@ -68,7 +91,7 @@ class StoreRepositoryImplTest {
 
     @Test
     void findAll_WhenResourceNotFound_ThrowsIOException() {
-        StoreRepositoryImpl repositoryWithMissingFile = new StoreRepositoryImpl(storeMapper) {
+        StoreRepositoryImpl repositoryWithMissingFile = new StoreRepositoryImpl(storeMapper, resourceLoader, "classpath:stores.json") {
             @Override
             public List<Store> findAll() throws IOException {
                 throw new IOException("Resource not found");
