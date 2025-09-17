@@ -2,6 +2,18 @@
 
 A microservice-based application for finding nearby Jumbo stores using geospatial search capabilities. The project implements hexagonal (ports and adapters) architecture and provides both REST API and web interface for store location services.
 
+### Featured Cities Navigation & Filtering
+<div align="center">
+  <img src="docs/images/ui-1.png" alt="Featured Cities Quick Navigation" width="600"/>
+  <p><em>Quick navigation buttons for major Dutch cities (Amsterdam, Rotterdam, Utrecht, The Hague)</em></p>
+</div>
+
+### Interactive Map Features & Store Details
+<div align="center">
+  <img src="docs/images/ui-2.png" alt="Interactive Map with Store Markers" width="600"/>
+  <p><em>Interactive map showing store markers, location details, and zoom controls</em></p>
+</div>
+
 ## 🏗️ Architecture Overview
 
 ### Project Structure
@@ -64,8 +76,6 @@ The application supports multiple spatial search algorithms:
 - **Maven** for build management
 - **Spring Cloud** (prepared for microservices expansion)
 
-## 📋 Functionality
-
 ### Core Features
 1. **Geospatial Search**: Find nearby stores within specified radius
 2. **Distance Calculation**: Haversine formula for accurate distance computation
@@ -73,8 +83,15 @@ The application supports multiple spatial search algorithms:
    - Maximum search radius (1-100 km)
    - Result limit (1-50 stores)
    - Open stores only (based on current time)
-4. **Interactive Map**: Visual representation of store locations
-5. **Responsive UI**: Works on desktop and mobile devices
+4. **Interactive Map Features**:
+   - Visual representation of store locations with markers
+   - **Use My Location**: Automatic geolocation detection with user permission
+   - **Dynamic Loading**: Real-time store loading when dragging and zooming the map
+   - **Map Navigation**: Pan and zoom to explore different areas
+   - Click on markers to view detailed store information
+5. **Featured Cities**: Quick navigation to popular Dutch cities (Amsterdam, Rotterdam, Utrecht, The Hague)
+6. **Responsive UI**: Works seamlessly on desktop and mobile devices
+7. **Real-time Updates**: Automatic store refresh based on current map viewport
 
 ### API Endpoints
 - `GET /api/v1/stores/nearby` - Find nearby stores
@@ -179,26 +196,6 @@ docker-compose down
 
 3. **Verify Frontend**:
    - Application: http://localhost:3000
-
-### Development Tips
-
-#### Backend Development
-- **Live Reload**: Use Spring Boot DevTools for automatic restart
-- **Profiles**: 
-  - `dev` - Development with detailed logging
-  - `docker` - Docker environment configuration
-- **Testing**: Run tests with `mvn test` or via IDEA test runner
-- **API Testing**: Use built-in Swagger UI or tools like Postman
-
-#### Frontend Development
-- **Hot Reload**: React development server supports hot reloading
-- **API Integration**: Configure `API_BASE_URL` for different environments
-- **Build**: `npm run build` for production build
-
-#### Debugging
-- **Backend**: Set breakpoints and use IDEA debugger
-- **Frontend**: Use browser developer tools
-- **Logs**: Check console output and log files in `logs/` directory
 
 ## 🔧 Configuration
 
