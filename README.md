@@ -124,6 +124,47 @@ docker-compose up
 docker-compose up -d
 ```
 
+### Configuring Backend Address
+When running with Docker, you can customize the backend API address that the frontend connects to:
+
+#### Default Configuration
+By default, the frontend is configured to connect to `http://localhost:8080/api/v1`
+
+#### Custom Backend Address
+To connect to a different backend (e.g., production server, different port, or remote instance):
+
+```bash
+# Option 1: Set environment variable before starting
+export API_BASE_URL=http://your-backend-server:8080/api/v1
+docker-compose up
+
+# Option 2: Inline environment variable
+API_BASE_URL=http://production-api.jumbo.com/api/v1 docker-compose up
+
+# Option 3: Using docker-compose override
+echo "version: '3.8'
+services:
+  store-locator-frontend:
+    environment:
+      - API_BASE_URL=http://your-custom-backend:8080/api/v1" > docker-compose.override.yml
+docker-compose up
+```
+
+#### Common Backend Address Examples
+```bash
+# Local development with different port
+API_BASE_URL=http://localhost:9090/api/v1 docker-compose up
+
+# Remote development server
+API_BASE_URL=http://dev-api.jumbo.com/api/v1 docker-compose up
+
+# Production environment
+API_BASE_URL=https://api.jumbo.com/api/v1 docker-compose up
+
+# Different host (when backend runs on different machine)
+API_BASE_URL=http://192.168.1.100:8080/api/v1 docker-compose up
+```
+
 ### Access Applications
 - **Frontend**: http://localhost:3000
 - **Backend API**: http://localhost:8080/api/v1

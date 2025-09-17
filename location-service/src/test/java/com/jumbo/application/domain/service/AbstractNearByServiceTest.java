@@ -4,6 +4,7 @@ import com.jumbo.application.domain.model.Store;
 import com.jumbo.application.port.in.NearByRequest;
 import com.jumbo.application.port.in.NearByUseCase;
 import com.jumbo.application.port.out.StoreRepository;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.quality.Strictness;
@@ -48,6 +49,7 @@ public abstract class AbstractNearByServiceTest {
     }
 
     @Test
+    @DisplayName("Returns only open stores sorted by distance and respects limit")
     void returnsOnlyOpenStoresSortedByDistanceAndRespectsLimit() throws Exception {
         Store s1 = mockStore(0.0, 0.05, true);   // nearer and open
         Store s2 = mockStore(0.0, 0.20, true);   // farther and open
@@ -65,6 +67,7 @@ public abstract class AbstractNearByServiceTest {
     }
 
     @Test
+    @DisplayName("Returns all stores sorted by distance when only open is false")
     void returnsAllStoresSortedByDistanceWhenOnlyOpenIsFalse() throws Exception {
         Store s1 = mockStore(0.0, 0.30, false);
         Store s2 = mockStore(0.0, 0.10, true);
@@ -81,6 +84,7 @@ public abstract class AbstractNearByServiceTest {
     }
 
     @Test
+    @DisplayName("Returns empty list when no stores available")
     void returnsEmptyListWhenNoStoresAvailable() throws Exception {
         NearByUseCase service = createServiceWithStores();
 
@@ -91,6 +95,7 @@ public abstract class AbstractNearByServiceTest {
     }
 
     @Test
+    @DisplayName("Respects limit selecting nearest first")
     void respectsLimitSelectingNearestFirst() throws Exception {
         Store s1 = mockStore(0.0, 0.05, true); // nearest
         Store s2 = mockStore(0.0, 0.20, true);
@@ -101,10 +106,11 @@ public abstract class AbstractNearByServiceTest {
         List<Store> result = service.findNearByStores(req, LocalTime.now());
 
         assertEquals(1, result.size());
-        assertEquals(s1, result.get(0));
+        assertEquals(s1, result.getFirst());
     }
 
     @Test
+    @DisplayName("Returns empty when only open true and no open stores")
     void returnsEmptyWhenOnlyOpenTrueAndNoOpenStores() throws Exception {
         Store s1 = mockStore(0.0, 0.05, false);
         Store s2 = mockStore(0.0, 0.10, false);
@@ -118,6 +124,7 @@ public abstract class AbstractNearByServiceTest {
     }
 
     @Test
+    @DisplayName("Recomputes distances and resorts on subsequent requests")
     void recomputesDistancesAndResortsOnSubsequentRequests() throws Exception {
         Store s1 = mockStore(0.0, 0.15, true); // farther from (0,0)
         Store s2 = mockStore(0.05, 0.0, true); // nearer to (0,0)
@@ -132,6 +139,7 @@ public abstract class AbstractNearByServiceTest {
     }
 
     @Test
+    @DisplayName("Returns only stores within max radius km")
     void returnsOnlyStoresWithinMaxRadiusKm() throws Exception {
         Store s1 = mockStore(0.0, 0.001, true);  // very close
         Store s2 = mockStore(0.0, 0.002, true);  // farther away

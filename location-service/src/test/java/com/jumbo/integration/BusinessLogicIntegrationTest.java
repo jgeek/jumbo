@@ -20,11 +20,6 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-/**
- * Integration test focused on business logic and cross-cutting concerns.
- * Tests the integration between different application layers and validates
- * business rules, error handling, and data consistency.
- */
 @SpringBootTest(classes = LocationServiceApplication.class)
 @ActiveProfiles("test")
 @TestPropertySource(properties = {
@@ -42,20 +37,15 @@ class BusinessLogicIntegrationTest {
     @Test
     @DisplayName("Should validate business rules for store search parameters")
     void shouldValidateBusinessRulesForStoreSearch() {
-        // Test boundary conditions and business constraints
 
-        // Given: Valid request within business limits
         NearByRequest validRequest = new NearByRequest(52.3702, 4.8952, 5.0, 10, false);
         LocalTime currentTime = LocalTime.of(14, 0); // 2 PM
 
-        // When: Processing valid request
         List<Store> stores = nearByService.findNearByStores(validRequest, currentTime);
 
-        // Then: Should return valid results
         assertThat(stores).isNotNull();
         assertThat(stores.size()).isLessThanOrEqualTo(10);
 
-        // Validate business rules for returned stores
         stores.forEach(store -> {
             assertThat(store.getDistance()).isPositive();
             assertThat(store.getDistance()).isLessThanOrEqualTo(5.0);
