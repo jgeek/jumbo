@@ -86,6 +86,7 @@ The application supports multiple spatial search algorithms:
 4. **Interactive Map Features**:
    - Visual representation of store locations with markers
    - **Use My Location**: Automatic geolocation detection with user permission
+     > **⚠️ Browser Compatibility Note**: The "Use My Location" feature works in Firefox for localhost development. Chrome requires HTTPS domains for geolocation access, so use Firefox for local development or deploy to an HTTPS domain for Chrome compatibility.
    - **Dynamic Loading**: Real-time store loading when dragging and zooming the map
    - **Map Navigation**: Pan and zoom to explore different areas
    - Click on markers to view detailed store information
@@ -118,10 +119,10 @@ git clone <repository-url>
 cd jumbo
 
 # Start all services
-docker-compose up
+docker-compose up --build
 
 # Or start in background
-docker-compose up -d
+docker-compose up --build -d
 ```
 
 ### Configuring Backend Address
@@ -315,6 +316,13 @@ mvn test -Dtest=BusinessLogicIntegrationTest
 ## 🐛 Troubleshooting
 
 ### Common Issues
+
+#### Geolocation Not Working
+```bash
+# Issue: "Use My Location" button doesn't work in Chrome
+# Solution: Use Firefox for localhost development or deploy to HTTPS
+```
+**Chrome Geolocation Restriction**: Chrome blocks geolocation API on non-HTTPS localhost. Use Firefox for local development or deploy to an HTTPS domain for Chrome compatibility.
 
 #### Port Conflicts
 ```bash
