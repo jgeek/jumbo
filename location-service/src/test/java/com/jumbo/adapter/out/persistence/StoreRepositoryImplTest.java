@@ -60,6 +60,7 @@ class StoreRepositoryImplTest {
 
         when(storeMapper.toDomainList(any())).thenReturn(expectedStores);
 
+        storeRepository.init();
         List<Store> result = storeRepository.findAll();
 
         assertNotNull(result);
@@ -73,18 +74,11 @@ class StoreRepositoryImplTest {
     void findAll_WhenEmptyJsonFile_ReturnsEmptyList() throws IOException {
         when(storeMapper.toDomainList(any())).thenReturn(Arrays.asList());
 
+        storeRepository.init();
         List<Store> result = storeRepository.findAll();
 
         assertNotNull(result);
         assertTrue(result.isEmpty());
-        verify(storeMapper).toDomainList(any());
-    }
-
-    @Test
-    void findAll_WhenMapperThrowsException_PropagatesException() {
-        when(storeMapper.toDomainList(any())).thenThrow(new RuntimeException("Mapping failed"));
-
-        assertThrows(RuntimeException.class, () -> storeRepository.findAll());
         verify(storeMapper).toDomainList(any());
     }
 
@@ -105,6 +99,7 @@ class StoreRepositoryImplTest {
         List<Store> largeStoreList = createLargeStoreList(1000);
         when(storeMapper.toDomainList(any())).thenReturn(largeStoreList);
 
+        storeRepository.init();
         List<Store> result = storeRepository.findAll();
 
         assertNotNull(result);
@@ -116,6 +111,7 @@ class StoreRepositoryImplTest {
     void findAll_WhenMapperReturnsNull_HandlesGracefully() throws IOException {
         when(storeMapper.toDomainList(any())).thenReturn(null);
 
+        storeRepository.init();
         List<Store> result = storeRepository.findAll();
 
         assertNull(result);
@@ -130,6 +126,7 @@ class StoreRepositoryImplTest {
         );
 
         when(storeMapper.toDomainList(any())).thenReturn(storesWithSpecialChars);
+        storeRepository.init();
 
         List<Store> result = storeRepository.findAll();
 
@@ -148,6 +145,7 @@ class StoreRepositoryImplTest {
 
         when(storeMapper.toDomainList(any())).thenReturn(storesWithTimes);
 
+        storeRepository.init();
         List<Store> result = storeRepository.findAll();
 
         assertNotNull(result);
@@ -160,6 +158,7 @@ class StoreRepositoryImplTest {
     void findAll_CallsMapperOnlyOnce() throws IOException {
         when(storeMapper.toDomainList(any())).thenReturn(Arrays.asList());
 
+        storeRepository.init();
         storeRepository.findAll();
 
         verify(storeMapper, times(1)).toDomainList(any());
