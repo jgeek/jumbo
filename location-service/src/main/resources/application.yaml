@@ -27,7 +27,6 @@ jumbo:
   location:
     search:
       strategy: quadtree  # Options: quadtree, in-memory
-      max-distance-km: 50  # Maximum search radius in kilometers
     stores:
       data-file: classpath:stores.json
 

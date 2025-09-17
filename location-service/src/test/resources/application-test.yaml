@@ -1,0 +1,29 @@
+spring:
+  application:
+    name: jumbo-location-service-test
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    deserialization:
+      fail-on-unknown-properties: false
+
+jumbo:
+  location:
+    search:
+      strategy: quadtree
+    stores:
+      data-file: classpath:stores.json  # Use real store data
+
+server:
+  port: 0  # Random port for tests
+  servlet:
+    context-path: /
+
+# Logging configuration for tests
+logging:
+  level:
+    com.jumbo: DEBUG
+    org.springframework.web: DEBUG
+  pattern:
+    console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+
