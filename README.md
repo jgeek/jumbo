@@ -366,7 +366,6 @@ REACT_APP_DEBUG=true npm start
 
 Complete API documentation is available at:
 - **Swagger UI**: http://localhost:8080/swagger-ui.html
-- **OpenAPI Spec**: http://localhost:8080/v3/api-docs
 
 The API follows RESTful principles with comprehensive validation and error handling.
 
