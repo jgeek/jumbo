@@ -1,7 +1,17 @@
 import axios from 'axios';
 import { Store, NearByRequest, ApiErrorResponse, DetailedError } from './types';
 
-const API_BASE_URL = 'http://localhost:8080/api/v1';
+// Helper function to get API base URL from environment
+const getApiBaseUrl = (): string => {
+  // Check if running in browser and env config is available
+  if (typeof window !== 'undefined' && (window as any)._env_) {
+    return (window as any)._env_.REACT_APP_API_BASE_URL;
+  }
+  // Fallback to environment variable or default
+  return process.env.REACT_APP_API_BASE_URL || 'http://localhost:8080/api/v1';
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 export const storeService = {
   async getClosestStores(params: {
