@@ -23,7 +23,7 @@
         <property name="MAX_HISTORY" value="5"/>
     </springProfile>
 
-    <springProfile name="staging">
+    <springProfile name="docker,staging">
         <property name="LOG_LEVEL_ROOT" value="INFO"/>
         <property name="LOG_LEVEL_JUMBO" value="INFO"/>
         <property name="LOG_LEVEL_SPRING" value="WARN"/>
@@ -34,7 +34,7 @@
         <property name="MAX_HISTORY" value="30"/>
     </springProfile>
 
-    <springProfile name="prod,production">
+    <springProfile name="docker,prod,production">
         <property name="LOG_LEVEL_ROOT" value="WARN"/>
         <property name="LOG_LEVEL_JUMBO" value="INFO"/>
         <property name="LOG_LEVEL_SPRING" value="ERROR"/>
@@ -63,7 +63,7 @@
     </springProfile>
 
     <!-- JSON Console appender for production environments -->
-    <springProfile name="staging,prod,production">
+    <springProfile name="docker,staging,prod,production">
         <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
             <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
                 <providers>
@@ -266,7 +266,7 @@
         <springProfile name="local,dev,test">
             <appender-ref ref="CONSOLE"/>
         </springProfile>
-        <springProfile name="staging,prod,production">
+        <springProfile name="docker,staging,prod,production">
             <appender-ref ref="CONSOLE"/>
         </springProfile>
         <appender-ref ref="ASYNC_FILE"/>
