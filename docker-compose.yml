@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  location-service:
+    build:
+      context: .
+      dockerfile: location-service/Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - JUMBO_LOCATION_SEARCH_STRATEGY=quadtree
+    networks:
+      - jumbo-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/api/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 45s
+
+  store-locator-frontend:
+    build:
+      context: ./store-locator-frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:80"
+    environment:
+      - API_BASE_URL=http://localhost:8080/api/v1
+    networks:
+      - jumbo-network
+    restart: unless-stopped
+    depends_on:
+      location-service:
+        condition: service_healthy
+
+networks:
+  jumbo-network:
+    driver: bridge
